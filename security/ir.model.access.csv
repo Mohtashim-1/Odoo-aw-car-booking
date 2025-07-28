@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_car_extra_service,Car Extra Service Access,model_car_extra_service,base.group_user,1,1,1,1
+access_booking_city,Car booking cites Access,model_booking_city,base.group_user,1,1,1,1
+access_car_booking_trip_line,Car booking trip line Access,model_car_booking_trip_line,base.group_user,1,1,1,1
+access_car_airport,Car booking Airport Access,model_car_airport,base.group_user,1,1,1,1
+access_car_booking_line,Car booking Line Access,model_car_booking_line,base.group_user,1,1,1,1
+access_car_booking,Car booking Access,model_car_booking,base.group_user,1,1,1,1
+access_car_year_model,Car year model,model_year_model,base.group_user,1,1,1,1
+access_business_point,Business Point,model_business_point,base.group_user,1,1,1,1
+access_year_car_brand_and_type,Year Car Brand and Type,model_year_car_brand_and_type,base.group_user,1,1,1,1
+access_type_of_service,name_type_of_service,model_type_of_service,base.group_user,1,1,1,1
+
+
+
+
+
+

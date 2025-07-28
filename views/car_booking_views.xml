@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_car_booking_tree" model="ir.ui.view">
+        <field name="name">car.booking.tree</field>
+        <field name="model">car.booking</field>
+        <field name="arch" type="xml">
+            <list>
+                 <field name="date_of_service" optional="show"/>
+                 <field name="name" optional="show"/>
+                 
+                  <field name="customer_ref_number" optional="show"/>
+                   <field name="business_type" optional="show"/>
+                <field name="customer_name" optional="show"/>
+                 <field name="guest_name" optional="show"/>
+                <field name="booking_type" optional="show"/>
+                <field name="location_id" optional="show"/>
+                <field name="region" optional="show"/>
+                 <field name="flight_number" optional="show"/>
+                 <field name="mobile" optional="hide"/>
+                 <field name="guest_phone" optional="hide"/>
+                <!-- <field name="from_date"/> -->
+                <!-- <field name="to_date"/> -->
+                <!-- <field name="duration"/> -->
+                <!-- <field name="car_id" optional="show"/> -->
+                 <field name="payment_type" widget="badge" optional="show"/>
+                 <field name="reservation_status" widget="badge" optional="show"/>
+                <field name="state" widget="badge" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+<record id="view_car_booking_form" model="ir.ui.view">
+    <field name="name">car.booking.form</field>
+    <field name="model">car.booking</field>
+    <field name="arch" type="xml">
+        <form string="Car Booking">
+            <header>
+    <!-- Show Reset to Draft button only when state is 'cancelled' -->
+    <button name="action_reset_draft"
+            string="Reset to Draft"
+            type="object"
+            class="oe_highlight"
+            invisible="state != 'cancelled'"/>
+
+    <!-- Show Confirm button only when state is 'draft' -->
+    <button name="action_confirm"
+            string="Confirm"
+            type="object"
+            class="oe_highlight"
+            invisible="state != 'draft'"/>
+
+     <button name="action_create_invoice" type="object" string="Create Qoutation" class="btn-primary" invisible="invoice_id != False"/>
+
+    <!-- Show Cancel button only when state is not 'cancelled' -->
+    <button name="action_cancel"
+            string="Cancel"
+            type="object"
+            class="oe_highlight"
+            invisible="state == 'cancelled'"/>
+
+    <!-- Statusbar -->
+    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,scheduled,departed,completed,cancelled"/>
+</header>
+            <sheet>
+            
+                <!-- <div class="oe_button_box" name="button_box">
+                    <button name="action_view_trip_profile" type="object" class="oe_stat_button" icon="fa-plus">
+                        Trip Profile
+                    </button>
+                </div> -->
+
+                <div class="oe_button_box" name="button_box" >
+                <button name="action_view_invoice" type="object" string="Invoice"
+        icon="fa-usd" class="oe_stat_button"
+        invisible="invoice_id == False"/>
+    <button name="action_view_trip_profile" type="object" class="oe_stat_button" icon="fa-plus" invisible="state != 'confirm'">
+        Trip Profile
+    </button>
+</div>
+                <!-- Simplified Layout when state='request' -->
+                <div >
+                    <!-- Basic Information -->
+                    <group string="Basic Information">
+                        <group>
+                            <field name="booking_type" required="1" 
+                            widget="selection"
+                            />
+                            <field name="invoice_id" invisible="1"/>
+
+                                           
+
+
+                              
+                        </group>
+                        <group>
+                            <field name="region" required="1" widget="selection"/>
+                            <field name="city" required="1" options="{'no_create': True}" />
+                            <field name="location_id" string="Branch" options="{'no_create': True}" />
+
+                            
+                           
+                        </group>
+                    </group>
+
+                    <!-- Booking Details -->
+                    <group string="Booking Details">
+                        <group>
+                         <field name="name" />
+                         <field name="customer_ref_number" />
+                         
+                         <field name="business_type" widget="selection" />
+                            <field name="customer_name" />
+                             <field name="guest_name" />
+
+                              <field name="reservation_status" widget="selection" readonly="1"/>
+
+                              
+
+                                 
+
+                                   
+
+                                     <field name="flight_number" />
+
+                                     <field name="mobile" string="Customer Phone"/>
+                                    <field name="guest_phone" string="Guest Phone"/>
+                                               <field name="hotel_room_number" />
+                                     
+
+
+         
+
+                         </group>
+                         <group>
+                             <field name="date_of_service" />
+                            <field name="payment_type" widget="selection" />
+
+
+                           <field name="attachment_ids" widget="many2many_binary"/>
+
+                            <field name="mis_charges" />
+
+                           
+                                             
+                         </group>
+                    </group>
+
+                     <group string="Airport Details">
+                      <group>
+                        <field name="airport_id" options="{'no_create': True}" />
+                       
+                       
+                        </group>
+                        <group>
+                         <field name="location_from" />
+                         <field name="location_to" />
+                        </group>
+
+                    </group>
+
+ 
+                     <group string="Bookings">
+                        <field name="car_booking_lines" context="{'default_start_date': date_of_service, 'default_car_booking_id': id}">
+                            <list editable="bottom">
+                                <!-- <field name="name" colspan="2"/> -->
+                                    
+                                <field name="type_of_service_id" string="Service Type"/>
+                                 <field name="start_date" string="Service date"/>
+                                <field name="end_date" />
+                                <field name="total_hours" />
+                                
+                                <field name="duration" />
+                                 <field name="qty" />
+                                   <field name="unit_price" />
+ <field name="extra_hour" />
+                                
+
+                                   <field name="extra_hour_charges"/>
+
+                                    <field name="tax_ids" widget="many2many_tags"/>
+
+                                <field name="amount"
+                                    readonly="extra_hour_charges == False"/>
+                                
+                                 
+                                  <field name="car_model_id"/>
+                                   <field name="car_year" />
+                                   <!-- <field name="product_id" /> -->
+                                    <field name="fleet_vehicle_id" optional="show" />
+                                   
+                                   <field name="driver_name" optional="show" />
+                                    <field name="mobile_no" optional="show" />
+
+                                    <field name="id_no" optional="show"/>
+                                 <field name="guest_ids" optional="hide" widget="many2many_tags"/>
+
+                                    
+                                    <!-- <field name="car_plate_no" /> -->
+
+                                 
+                               
+                            </list>
+                        </field>
+                    </group>
+
+                    <group>
+
+                    <field name="without_vat_price" />
+                       <field name="mis_charges" readonly="1"/>
+                                             <field name="vat" />
+                                            <field name="total_tax" string="Total Vat"/>
+
+                                             
+                                              <field name="extra_hour_total" />
+                                                <field name="extra_hour_charges_total" />
+
+                                             
+                                             <field name="amount_total" />
+
+                 </group>
+                    <!-- Airport Details -->
+                   
+                    <!-- Notes -->
+                    <group string="Remarks">
+                        <field name="notes" nolabel="1" colspan="2"/>
+                    </group>
+                </div>
+                <!-- Original Notebook Layout when state != 'request' -->
+                
+            </sheet>
+        </form>
+    </field>
+</record>
+
+    <record id="action_car_booking" model="ir.actions.act_window">
+        <field name="name">Car Bookings</field>
+        <field name="res_model">car.booking</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new booking for car.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_car_booking_root"
+              name="Car Booking"
+              web_icon="car_booking,static/description/icon.png"
+              sequence="0"/>
+
+    <menuitem id="menu_car_booking" name="Bookings" parent="menu_car_booking_root" action="action_car_booking"/>
+</odoo>

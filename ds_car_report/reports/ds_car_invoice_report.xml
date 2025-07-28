@@ -1,0 +1,469 @@
+<odoo>
+    <!-- Paper Format Configuration -->
+    <record id="paperformat_ds_invoice_report" model="report.paperformat">
+        <field name="name">DS Invoice Paper Format</field>
+        <field name="default" eval="False"/>
+        <field name="format">A3</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">20</field>
+        <field name="margin_right">20</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Report Action Configuration -->
+    <record id="action_report_ds_invoice" model="ir.actions.report">
+        <field name="name">DS Tax Invoice</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ds_car_report.report_ds_car_invoice_document</field>
+        <field name="report_file">ds_car_report.report_ds_car_invoice_document</field>
+        <field name="print_report_name">'DS Invoice - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_ds_invoice_report"/>
+    </record>
+
+    <!-- Main Invoice Template -->
+    <template id="report_ds_invoice_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o"/>
+            <t t-set="o" t-value="o.with_context(lang=lang)"/>
+
+            <div class="page" style="margin: 10px;">
+                <!-- Company Header with Logo -->
+                <div style="text-align: center; margin-top: 0px; margin-bottom: 15px; margin-top: 0;">
+                    <img src="/ds_car_report/static/description/ds_report_header.png" alt="Logo"
+                         style="max-width:100%;"/>
+                </div>
+
+                <!-- Tax Invoice Header -->
+                <div style="text-align: center; margin: 20px 0; margin-top:60px;padding: 10px;margin-bottom: 40px;">
+                    <h3 style="margin: 0; font-weight: bold; color: #333;">
+                        Tax Invoice فاتورة ضريبية
+                    </h3>
+                </div>
+
+                <!-- Invoice Details Section -->
+                <div class="row" style="margin-bottom: 40px;">
+                    <div class="col-6">
+                        <table style="width: 100%; font-size: 14px;">
+                            <tr>
+                                <td style="width: 40%; font-weight: bold; padding: 5px 0;">Invoice No:</td>
+                                <td style="width: 60%; padding: 5px 0;">
+                                    <span t-field="o.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 5px 0;">Booking Ref:</td>
+                                <td style="padding: 5px 0;">
+                                    <span t-field="o.ref"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 5px 0;">Invoice Date:</td>
+                                <td style="padding: 5px 0;">
+                                    <span t-field="o.invoice_date" t-options="{'widget': 'date'}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.invoice_date_due">
+                                <td style="font-weight: bold; padding: 5px 0;">Due Date:</td>
+                                <td style="padding: 5px 0;">
+                                    <span t-field="o.invoice_date_due" t-options="{'widget': 'date'}"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-6">
+                        <table style="width: 100%; font-size: 14px; text-align: right;">
+                            <tr>
+                                <td style="font-weight: bold; padding: 5px 0;">Invoice Details:</td>
+                                <td style="padding: 5px 0;">تفاصيل الفاتورة</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 5px 0;">Customer Ref:</td>
+                                <td style="padding: 5px 0;">
+                                    <span t-field="o.partner_id.ref"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Billed To Section -->
+                <div class="row" style="margin-bottom: 20px; margin-bottom:40px;">
+                    <div class="col-6">
+                        <div style="font-weight: bold; margin-bottom: 10px; font-size: 16px;">Billed To</div>
+                        <div style="font-size: 14px; line-height: 1.5;">
+                            <div style="font-weight: bold;">
+                                <span t-field="o.partner_id.name"/>
+                            </div>
+                            <div t-if="o.partner_id.street">
+                                <span t-field="o.partner_id.street"/>
+                            </div>
+                            <div t-if="o.partner_id.street2">
+                                <span t-field="o.partner_id.street2"/>
+                            </div>
+                            <div>
+                                <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>
+                                <span t-if="o.partner_id.state_id">,
+                                    <span t-field="o.partner_id.state_id.name"/>
+                                </span>
+                                <span t-if="o.partner_id.zip">
+                                    <span t-field="o.partner_id.zip"/>
+                                </span>
+                            </div>
+                            <div t-if="o.partner_id.country_id">
+                                <span t-field="o.partner_id.country_id.name"/>
+                            </div>
+                            <div t-if="o.partner_id.vat" style="margin-top: 10px;">
+                                <strong>VAT Registration#:</strong>
+                                <span t-field="o.partner_id.vat"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6" style="text-align: right;">
+                        <div style="font-weight: bold; margin-bottom: 10px; font-size: 16px;">مرسل الفاتورة إلى</div>
+                        <div style="font-size: 14px; line-height: 1.5;">
+                            <div>المملكة العربية السعودية</div>
+                            <div style="margin-top: 10px;">
+                                <strong>رقم سجل الضرائب</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Details Table -->
+                <table class="table table-bordered" style="margin-top: 40px; font-size: 12px;">
+                    <thead style="background-color: #f8f9fa;">
+                        <tr>
+                            <th style="text-align: center; padding: 8px; width: 5%;">#</th>
+                            <th style="text-align: center; padding: 8px; width: 15%;">
+                                Service Type
+                                <br/>
+                                <span style="font-size: 11px;">نوع الخدمة</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 20%;">
+                                Description
+                                <br/>
+                                <span style="font-size: 11px;">الوصف</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 10%;">
+                                From Date
+                                <br/>
+                                <span style="font-size: 11px;">من تاريخ</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 10%;">
+                                To Date
+                                <br/>
+                                <span style="font-size: 11px;">إلى تاريخ</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 8%;">
+                                Duration
+                                <br/>
+                                <span style="font-size: 11px;">المدة</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 8%;">
+                                Qty
+                                <br/>
+                                <span style="font-size: 11px;">الكمية</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 10%;">
+                                Add. Charges
+                                <br/>
+                                <span style="font-size: 11px;">اإلضافة</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 12%;">
+                                Unit Price
+                                <br/>
+                                <span style="font-size: 11px;">سعر الوحدة</span>
+                            </th>
+                            <th style="text-align: center; padding: 8px; width: 12%;">
+                                Total
+                                <br/>
+                                <span style="font-size: 11px;">المجموع</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">Full Day</td>
+                            <td style="text-align: center;">Mercedes S460</td>
+                            <td style="text-align: center;">6/25/2025</td>
+                            <td style="text-align: center;">6/26/2025</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">-</td>
+                            <td style="text-align: right;">600.00</td>
+                            <td style="text-align: right;">600.00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">2</td>
+                            <td style="text-align: center;">Full Day</td>
+                            <td style="text-align: center;">Mercedes S460</td>
+                            <td style="text-align: center;">6/25/2025</td>
+                            <td style="text-align: center;">6/28/2025</td>
+                            <td style="text-align: center;">3</td>
+                            <td style="text-align: center;">2</td>
+                            <td style="text-align: center;">-</td>
+
+                            <td style="text-align: right;">1,200.00</td>
+                            <td style="text-align: right;">3,200.00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">3</td>
+                            <td style="text-align: center;">Full Day</td>
+                            <td style="text-align: center;">Mercedes S460</td>
+                            <td style="text-align: center;">6/25/2025</td>
+                            <td style="text-align: center;">6/27/2025</td>
+                            <td style="text-align: center;">2</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">-</td>
+
+                            <td style="text-align: right;">1,000.00</td>
+                            <td style="text-align: right;">1,000.00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">4</td>
+                            <td style="text-align: center;">Full Day</td>
+                            <td style="text-align: center;">Mercedes S460</td>
+                            <td style="text-align: center;">6/25/2025</td>
+                            <td style="text-align: center;">6/30/2025</td>
+                            <td style="text-align: center;">5</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">-</td>
+
+                            <td style="text-align: right;">600.00</td>
+                            <td style="text-align: right;">2,800.00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">5</td>
+                            <td style="text-align: center;">Full Day</td>
+                            <td style="text-align: center;">Ford Taurus</td>
+                            <td style="text-align: center;">6/25/2025</td>
+                            <td style="text-align: center;">6/26/2025</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">-</td>
+
+                            <td style="text-align: right;">1,500.00</td>
+                            <td style="text-align: right;">1,500.00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">6</td>
+                            <td style="text-align: center;">Full Day</td>
+                            <td style="text-align: center;">GMC Yukon</td>
+                            <td style="text-align: center;">6/25/2025</td>
+                            <td style="text-align: center;">6/26/2025</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: center;">10</td>
+                            <td style="text-align: center;">-</td>
+
+                            <td style="text-align: right;">3,000.00</td>
+                            <td style="text-align: right;">3,000.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Totals Section -->
+
+                <div class="row"
+                     style="border-top: 2px solid #dee2e6; padding-top: 40px; margin-top: 110px;margin-bottom: 90px;">
+                    <!-- QR Code Column -->
+                    <div style="width: 40%; display: inline-block; text-align: left;">
+                        <img src="/ds_car_report/static/description/qr.jpeg" style="width:150px; height:150px;"/>
+                    </div>
+
+                    <!-- Totals Table -->
+                    <div style="width: 60%; display: inline-block;">
+                        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 4px 8px;">Sub Total</td>
+                                <td style="padding: 4px 8px; text-align: left;">المجموع الفرعي</td>
+                                <td style="padding: 4px 8px; text-align: right; background-color: #f2f2f2;">
+                                    <span t-field="o.amount_untaxed"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px 8px;">Vat 15%</td>
+                                <td style="padding: 4px 8px; text-align: left;">ضريبة القيمة المضافة</td>
+                                <td style="padding: 4px 8px; text-align: right; background-color: #f2f2f2;">
+                                    <span t-field="o.amount_tax"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td style="padding: 4px 8px;">Miscellaneous Charges</td>
+                                <td style="padding: 4px 8px; text-align: left;">رسوم متنوعة</td>
+                                <td style="padding: 4px 8px; text-align: right; background-color: #f2f2f2;">
+                                    <span t-esc="'50.00'"/>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td style="padding: 4px 8px; font-weight: bold;">Total Amount</td>
+                                <td style="padding: 4px 8px; text-align: left; font-weight: bold;">المبلغ الإجمالي</td>
+                                <td style="padding: 4px 8px; text-align: right; font-weight: bold; background-color: #f2f2f2;">
+                                    <span t-field="o.amount_total"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px 8px;">Paid Amount</td>
+                                <td style="padding: 4px 8px; text-align: left;">المبلغ المدفوع</td>
+                                <td style="padding: 4px 8px; text-align: right; background-color: #f2f2f2;">
+                                    <span t-esc="o.amount_total - o.amount_residual"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px 8px;">Due Amount</td>
+                                <td style="padding: 4px 8px; text-align: left;">المبلغ المستحق</td>
+                                <td style="padding: 4px 8px; text-align: right; background-color: #f2f2f2; font-weight: bold;">
+                                    <span t-field="o.amount_residual"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+
+                <!-- Total Due Amount in Words -->
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-12">
+                        <div style="font-weight: bold; margin-bottom: 8px;">
+                            <span>Total Due Amount in Words :</span>
+                            <span style="float: right;">إجمالي المبلغ مستحق بالكلمات</span>
+                        </div>
+
+                        <div style="background-color: #f2f2f2; padding: 10px; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <!-- English Amount in Words -->
+                                <span>
+                                    <t t-esc="o.company_id.currency_id.amount_to_text(o.amount_total).capitalize()"/>
+                                    <t t-esc="o.currency_id.name"/>
+                                </span>
+
+                                <!-- Arabic Amount in Words (hardcoded) -->
+                                <span style="text-align: right; direction: rtl;">
+                                    ثلاثة عشر ألف وتسعمائة وخمسة عشر ريال
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remarks Section -->
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-12">
+                        <div style="font-weight: bold; margin-bottom: 10px;text-align: left;">Remarks: ملاحظات:</div>
+                    </div>
+                </div>
+
+
+                <!-- Bank Account Information -->
+                <div style="margin-top: 40px;">
+                    <table style="width: 100%; border: 1px solid black; border-collapse: collapse; font-size: 14px;">
+                        <!-- Title Row -->
+                        <tr>
+                            <td colspan="3"
+                                style="text-align: center; font-weight: bold; border: 1px solid black; padding: 8px;">
+                                Bank Account Information معلومات الحساب المصرفي
+                            </td>
+                        </tr>
+
+                        <!-- Bank Name Row -->
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px; width: 33%; font-weight: bold;">Bank
+                                Name
+                            </td>
+                            <td style="border: 1px solid black; padding: 5px;">Riyadh Bank</td>
+                            <td style="border: 1px solid black; padding: 5px; text-align: right;">اسم البنك</td>
+                        </tr>
+
+                        <!-- Account Name Row -->
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px; font-weight: bold;">Account Name</td>
+                            <td style="border: 1px solid black; padding: 5px;">
+                                <span t-field="o.company_id.name"/>
+                            </td>
+                            <td style="border: 1px solid black; padding: 5px; text-align: right;">اسم الحساب</td>
+                        </tr>
+
+                        <!-- Account Number Row -->
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px; font-weight: bold;">Account Number</td>
+                            <td style="border: 1px solid black; padding: 5px;">
+                                <t t-if="o.company_id.partner_id.bank_ids">
+                                    <span t-field="o.company_id.partner_id.bank_ids[0].acc_number"/>
+                                </t>
+                                <t t-if="not o.company_id.partner_id.bank_ids">SA3720000002471164159940</t>
+                            </td>
+                            <td style="border: 1px solid black; padding: 5px; text-align: right;">رقم الحساب</td>
+                        </tr>
+
+                        <!-- VAT Number Row -->
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px; font-weight: bold;">VAT Registration
+                                Number
+                            </td>
+                            <td style="border: 1px solid black; padding: 5px;">310809801200003
+                            </td>
+                            <td style="border: 1px solid black; padding: 5px; text-align: center; direction: rtl; width: 150px; word-wrap: break-word;">
+                                رقم تسجيل ضريبة القيمة
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Footer Signatures -->
+                <div class="row" style="margin-top: 60px;">
+                    <div class="col-6">
+                        <div style="text-align: center;">
+                            <div style="margin-top: 60px;font-weight: bold; font-size:18px;">Sales:</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="text-align: center;">
+                            <div style="margin-top: 60px;font-weight: bold; font-size:18px;">Received By:</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div style="text-align: center;">
+                        <div style="margin-top: 60px;font-size:16px;">For Enquiries please call 800 301 3000 - (966) 596
+                            430 986
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="text-align: center;">
+                        <div style="margin-top: 60px;">DS Rent-Tax Invoice</div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Report Document Template -->
+    <template id="report_ds_car_invoice_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang"/>
+                <t t-call="ds_car_report.report_ds_invoice_document" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>

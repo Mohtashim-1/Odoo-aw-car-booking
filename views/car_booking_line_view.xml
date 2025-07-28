@@ -1,0 +1,107 @@
+<odoo>
+    <!-- 
+      This is the updated view for the "Booking Line Dashboard".
+      It contains only the fields from your image, in that specific order.
+      The 'optional="show"' attribute allows users to hide/show columns as needed.
+    -->
+    <record id="view_car_booking_line_tree_all_fields" model="ir.ui.view">
+        <field name="name">car.booking.line.tree.all.fields</field>
+        <field name="model">car.booking.line</field>
+        <field name="arch" type="xml">
+            <list string="Booking Line Dashboard" create="false">
+                <!-- Fields in the exact order from your screenshot -->
+                <field name="branch_id" optional="show"/>
+                <field name="city" optional="show"/>
+                <field name="car_booking_id" optional="show" widget="many2one"/>
+                <field name="type_of_service_id" optional="show"/>
+                <field name="car_model_id" optional="show"/>
+                <field name="car_year" optional="show"/>
+                <field name="start_date" optional="show"/>
+                <field name="end_date" optional="show"/>
+                <field name="customer_name" optional="show"/>
+                <field name="guest_name" optional="show"/>
+                <field name="mobile" optional="show"/>
+                <field name="flight_no" optional="show"/>
+                <field name="hotel_room_number" optional="show"/>
+                <field name="location_from" optional="show"/>
+                <field name="location_to" optional="show"/>
+                <field name="business_type" optional="show"/>
+                <field name="fleet_vehicle_id" optional="show"/>
+                <field name="id_no" optional="show"/>
+                <field name="mobile_no" optional="show"/>
+                <field name="driver_name" optional="show"/>
+                <field name="duration" optional="show"/>
+                <field name="qty" optional="show"/>
+                <field name="reservation_status" optional="show"/>
+                <field name="booking_state" string="Status" optional="show"/>
+                <field name="guest_ids"  widget="many2many_tags"  optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- Search View -->
+    <record id="view_car_booking_line_search" model="ir.ui.view">
+        <field name="name">car.booking.line.search</field>
+        <field name="model">car.booking.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Booking Lines">
+                <field name="car_booking_id"/>
+                <field name="customer_name"/>
+            </search>
+        </field>
+    </record>
+
+<record id="view_car_booking_line_form" model="ir.ui.view">
+    <field name="name">car.booking.line.form</field>
+    <field name="model">car.booking.line</field>
+    <field name="arch" type="xml">
+        <form string="Booking Line">
+            <sheet>
+                <group>
+                    <field name="branch_id"/>
+                    <field name="city"/>
+                    <field name="car_booking_id"/>
+                    <field name="type_of_service_id"/>
+                    <field name="car_model_id"/>
+                    <field name="car_year"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="customer_name"/>
+                    <field name="guest_name"/>
+                    <field name="mobile"/>
+                    <field name="flight_no"/>
+                    <field name="hotel_room_number"/>
+                    <field name="location_from"/>
+                    <field name="location_to"/>
+                    <field name="business_type"/>
+                    <field name="fleet_vehicle_id"/>
+                    <field name="id_no"/>
+                    <field name="mobile_no"/>
+                    <field name="driver_name"/>
+                    <field name="duration"/>
+                    <field name="qty"/>
+                    <field name="reservation_status"/>
+                    <field name="booking_state" string="Status"/>
+                </group>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+    <!-- The Action and Menu remain the same, they will now use the updated view above -->
+<record id="action_all_car_booking_lines" model="ir.actions.act_window">
+    <field name="name">All Booking Lines</field>
+    <field name="res_model">car.booking.line</field>
+    <field name="view_mode">list,form</field>
+    <field name="view_id" ref="view_car_booking_line_tree_all_fields"/>
+    <field name="search_view_id" ref="view_car_booking_line_search"/>
+    <field name="views" eval="[(ref('view_car_booking_line_tree_all_fields'), 'list'),
+                               (ref('view_car_booking_line_form'), 'form')]"/>
+</record>
+
+    <menuitem id="menu_all_car_booking_lines"
+              name="Booking Line Dashboard"
+              parent="car_booking.menu_car_booking_root"
+              action="action_all_car_booking_lines"/>
+</odoo>

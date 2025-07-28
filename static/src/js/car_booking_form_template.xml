@@ -1,0 +1,101 @@
+<t t-name="car_booking.Form" owl="1">
+    <!-- Your existing form fields here -->
+
+    <!-- Approver-only Buttons -->
+    <div t-if="isApprover.value" class="o_form_buttons d-flex justify-content-start mt-3">
+        <button class="btn btn-success me-2" t-on-click="approveBooking">
+            ✅ Approve
+        </button>
+        <button class="btn btn-danger" t-on-click="rejectBooking">
+            ❌ Reject
+        </button>
+    </div>
+    <div class="o_form_container p-4">
+        <h3>🧾 Car Booking Form</h3>
+
+        <!-- Booking Type -->
+        <label>Booking Type</label>
+        <select t-model="state.bookingType" class="form-control mb-2">
+            <option value="">Select</option>
+            <option value="car_with_driver">Car with Driver</option>
+            <option value="rental">Rental</option>
+        </select>
+
+        <!-- Show driver info if needed -->
+        <div t-if="state.bookingType === 'car_with_driver'">
+            <label>Driver Info</label>
+            <textarea t-model="state.driverInfo" class="form-control mb-2"/>
+        </div>
+
+        <!-- Customer Type -->
+        <label>Customer Type</label>
+        <select t-model="state.customerType" class="form-control mb-2">
+            <option value="">Select</option>
+            <option value="individual">Individual</option>
+            <option value="company">Company</option>
+        </select>
+
+        <div t-if="state.customerType === 'individual'">
+            <label>National ID</label>
+            <input t-model="state.nationalId" class="form-control mb-2"/>
+        </div>
+        <div t-if="state.customerType === 'company'">
+            <label>Contact Person</label>
+            <input t-model="state.contactPerson" class="form-control mb-2"/>
+        </div>
+
+        <!-- Dropdowns and linked fields -->
+        <label>Region</label>
+        <select t-model="state.region" class="form-control mb-2">
+            <option value="">Select</option>
+            <t t-foreach="['north', 'south', 'east', 'west', 'riyadh']" t-as="region">
+                <option t-att-value="region" t-esc="region"/>
+            </t>
+        </select>
+
+        <label>Car</label>
+        <select t-model="state.carId" class="form-control mb-2">
+            <option value="">Select</option>
+            <t t-foreach="cars.value" t-as="car">
+                <option t-att-value="car.id" t-esc="car.name"/>
+            </t>
+        </select>
+
+        <label>Customer</label>
+        <select t-model="state.customerId" class="form-control mb-2">
+            <option value="">Select</option>
+            <t t-foreach="customers.value" t-as="cust">
+                <option t-att-value="cust.id" t-esc="cust.name"/>
+            </t>
+        </select>
+
+        <label>Extra Services</label>
+        <t t-foreach="services.value" t-as="service">
+            <div>
+                <input type="checkbox"
+                    t-att-checked="state.extraServices.includes(service.id)"
+                    t-on-change="() => onCheckboxChange(service.id)" />
+                <span t-esc="service.name"/>
+            </div>
+        </t>
+
+        <!-- Dates -->
+        <label>Start Date</label>
+        <input type="date" t-model="state.startDate" class="form-control mb-2"/>
+        <label>End Date</label>
+        <input type="date" t-model="state.endDate" class="form-control mb-2"/>
+        <label>From</label>
+        <input t-model="state.fromLocation" class="form-control mb-2"/>
+        <label>To</label>
+        <input t-model="state.toLocation" class="form-control mb-2"/>
+
+        <!-- Service Type -->
+        <label>Service Type</label>
+        <select t-model="state.serviceType" class="form-control mb-2">
+            <option value="full_day">Full Day</option>
+            <option value="mishwar">Mishwar</option>
+        </select>
+
+        <button t-on-click="submitForm" class="btn btn-primary mt-3">Submit Booking</button>
+    </div>
+</t>

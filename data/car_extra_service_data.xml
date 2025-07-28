@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Extra services -->
+        <record id="extra_service_child_chair" model="car.extra.service">
+            <field name="name">Child Chair</field>
+        </record>
+        <record id="extra_service_executive_reception" model="car.extra.service">
+            <field name="name">Executive Reception</field>
+        </record>
+        <record id="extra_service_flower_bouquet" model="car.extra.service">
+            <field name="name">Flower Bouquet</field>
+        </record>
+        <record id="extra_service_bodyguard" model="car.extra.service">
+            <field name="name">Bodyguard</field>
+        </record>
+    </data>
+
+    <!-- Separate sequences for each booking type -->
+    <data noupdate="1">
+        <record id="seq_car_booking_with_driver" model="ir.sequence">
+            <field name="name">Car Booking With Driver</field>
+            <field name="code">car.booking.with_driver</field>
+            <field name="prefix">DSL/</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="seq_car_booking_rental" model="ir.sequence">
+            <field name="name">Car Booking Rental</field>
+            <field name="code">car.booking.rental</field>
+            <field name="prefix">DSR/</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
+</odoo>
