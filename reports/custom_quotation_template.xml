@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Custom Quotation Template -->
+        <template id="custom_quotation_template" name="Custom Quotation Template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <!-- Header Section -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-left">
+                                        <h2 class="text-primary">QUOTATION</h2>
+                                        <div class="mt-3">
+                                            <strong>Quotation No:</strong> <span t-field="o.name"/>
+                                            <br/>
+                                            <strong>Date:</strong> <span t-field="o.date_order" t-options='{"widget": "date"}'/>
+                                            <br/>
+                                            <strong>Valid Until:</strong> <span t-field="o.validity_date" t-options='{"widget": "date"}'/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-right">
+                                        <img t-if="o.company_id.logo" t-src="image_data_uri(o.company_id.logo)" style="max-height: 45px;" alt="Logo"/>
+                                        <h4 t-field="o.company_id.name"/>
+                                        <div t-field="o.company_id.partner_id" 
+                                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Customer Information -->
+                            <div class="row mt-4">
+                                <div class="col-6">
+                                    <h5 class="text-primary">Bill To:</h5>
+                                    <div t-field="o.partner_id" 
+                                         t-options='{"widget": "contact", "fields": ["name", "address"], "no_marker": true}'/>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="text-primary">Ship To:</h5>
+                                    <div t-field="o.partner_shipping_id" 
+                                         t-options='{"widget": "contact", "fields": ["name", "address"], "no_marker": true}'/>
+                                </div>
+                            </div>
+
+                            <!-- Order Lines -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr class="table-primary">
+                                                <th>Description</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-right">Unit Price</th>
+                                                <th class="text-right">Taxes</th>
+                                                <th class="text-right">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="o.order_line" t-as="line">
+                                                <td>
+                                                    <span t-field="line.product_id.name"/>
+                                                    <br/>
+                                                    <small class="text-muted" t-field="line.name"/>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span t-field="line.product_uom_qty"/>
+                                                    <span t-field="line.product_uom.name"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="line.price_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Totals Section -->
+                            <div class="row mt-4">
+                                <div class="col-6">
+                                    <div t-if="o.note">
+                                        <h6 class="text-primary">Notes:</h6>
+                                        <p t-field="o.note"/>
+                                    </div>
+                                    <div t-if="o.payment_term_id">
+                                        <h6 class="text-primary">Payment Terms:</h6>
+                                        <p t-field="o.payment_term_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td class="text-right"><strong>Subtotal:</strong></td>
+                                            <td class="text-right">
+                                                <span t-field="o.amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-right"><strong>Tax:</strong></td>
+                                            <td class="text-right">
+                                                <span t-field="o.amount_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <td class="text-right"><strong>Total:</strong></td>
+                                            <td class="text-right">
+                                                <strong><span t-field="o.amount_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="row mt-5">
+                                <div class="col-12 text-center">
+                                                                               <p class="text-muted">
+                                               <strong>Thank you for your business!</strong><br/>
+                                               For any questions, please contact us at <span t-field="o.company_id.email"/> or call <span t-field="o.company_id.phone"/>
+                                           </p>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <!-- Report Action -->
+        <record id="action_report_custom_quotation" model="ir.actions.report">
+            <field name="name">Custom Quotation</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">car_booking.custom_quotation_template</field>
+            <field name="report_file">car_booking.custom_quotation_template</field>
+            <field name="print_report_name">'Custom Quotation - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo> 

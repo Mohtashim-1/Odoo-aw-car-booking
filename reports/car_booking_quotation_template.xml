@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Car Booking Quotation Template -->
+        <template id="car_booking_quotation_template" name="Car Booking Quotation Template">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="company" t-value="doc.company_id" />
+                <t t-set="arabic_text" t-value="'عرض السعر'" />
+                
+                <t t-call="web.html_container">
+                    <head>
+                        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
+                        <style>
+                            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700;900&amp;display=swap');
+                            .arabic-text {
+                                font-family: 'DroidArabicNaskh', 'Noto Sans Arabic', 'Arial Unicode MS', sans-serif !important;
+                                direction: rtl;
+                                text-align: center;
+                                font-weight: 700;
+                            }
+                            .page-footer {
+                                text-align: center;
+                                font-size: 10px;
+                                color: black;
+                                background: white;
+                                padding: 20px 0;
+                                border-top: 2px solid #333;
+                                position: fixed;
+                                bottom: 0;
+                                left: 0;
+                                right: 0;
+                                width: 100%;
+                                z-index: 1000;
+                            }
+                            .page-header {
+                                text-align: center;
+                                margin-bottom: 30px;
+                                padding-bottom: 20px;
+                                border-bottom: 2px solid #333;
+                                position: fixed;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                width: 100%;
+                                background: white;
+                                z-index: 1000;
+                            }
+                            .main-content {
+                                margin-top: 150px;
+                                margin-bottom: 100px;
+                                padding: 20px;
+                            }
+                        </style>
+                    </head>
+                    <main style="margin: 0 !important; padding: 0 !important; border: none !important; background: white !important;">
+                        <div style="font-family: 'Ubuntu', sans-serif !important; margin: 0 !important; padding: 20px !important; font-size: 12px; line-height: 1.4; color: black; min-height: calc(100vh - 150px);">
+                            
+                            <!-- Page Header -->
+                            <t t-call="car_booking.car_booking_quotation_header"/>
+
+                            <!-- Main Content -->
+                            <div style="margin-bottom: 20px;">
+                                <!-- Quotation Information -->
+                                <div style="margin-bottom: 30px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                        <div style="width: 60%;">
+                                            <div><span style="font-weight: bold; color: black;">Quotation Number</span> <span t-field="doc.name"/></div>
+                                            <div><span style="color: black;margin-top: 10px;padding-top:10px">Date:</span> <span t-field="doc.date_order" t-options='{"widget": "date", "format": "EEEE, MMMM d, yyyy"}'/></div>
+                                            
+                                        </div>
+                                        <div style="width: 38%;">
+                                            <div><span style="font-weight: bold; color: black;"></span> <span t-field="doc.partner_id.name"/></div>
+                                            <div><span style="font-weight: bold; color: black;">Customer Ref:</span> <span t-field="doc.partner_id.street"/></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div style="margin-bottom: 20px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                        <div style="width: 48%;">
+                                           <div><span style="font-weight: bold; color: black; margin-left: 10px;">To</span></div>
+                                            <div><span style="font-weight: bold; color: black; margin-left: 20px;"></span> <span t-field="doc.partner_id.name"/></div>
+                                            <div><span style="font-weight: bold; color: black; margin-left: 20px;"></span> <span t-field="doc.partner_id.street"/></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Car Booking Services -->
+                                <t t-if="doc.order_line">
+                                    <table style="font-family: 'Ubuntu', sans-serif !important; width: 100%; border-collapse: collapse; margin: 20px 0; background: white;">
+                                        <thead>
+                                            <tr>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">#</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Booking Type</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Service Type</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Duration</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Car Type</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Qty</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Add Charges</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Price</th>
+                                                <th style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold;">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="enumerate(doc.order_line, start=1)" t-as="line">
+                                                <tr>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><t t-esc="line[0]"/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><t t-esc="line[1].product_id.name"/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><t t-esc="line[1].service_type.name"/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><t t-esc="line[1].service_type.name"/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><t t-esc="line[1].name"/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><span t-field="line[1].product_uom_qty" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><span t-field="line[1].product_uom_qty" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><span t-field="line[1].price_unit" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;"><span t-field="line[1].price_subtotal" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Totals -->
+                                    <div style="font-family: 'Ubuntu', sans-serif !important; margin-top: 20px; width: 100%;">
+                                        <table style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <!-- QR Code Section -->
+                                                <td style="width: 30%; vertical-align: top; padding: 10px;">
+                                                    <div style="text-align: center;">
+                                                        <img t-att-src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=' + doc.name" 
+                                                             style="height:150px; width:150px;" 
+                                                             alt="QR Code" />
+                                                    </div>
+                                                </td>
+                                                
+                                                <!-- Amounts Section -->
+                                                <td style="width: 70%; vertical-align: top; padding: 10px;">
+                                                    <table style="width: 100%; border-collapse: collapse;">
+                                                        <tr>
+                                                            <td style="width: 70%; text-align: right; padding: 8px; font-weight: bold; color: black;">Sub Total:</td>
+                                                            <td style="width: 30%; text-align: right; padding: 8px; background-color: #f1f3f4; border-radius: 4px;">
+                                                                <span t-field="doc.amount_untaxed" t-options='{"widget": "float", "precision": 0}'/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="width: 70%; text-align: right; padding: 8px; font-weight: bold; color: black;">VAT 15%:</td>
+                                                            <td style="width: 30%; text-align: right; padding: 8px; background-color: #f1f3f4; border-radius: 4px;">
+                                                                <span t-field="doc.amount_tax" t-options='{"widget": "float", "precision": 0}'/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="width: 70%; text-align: right; padding: 8px; font-weight: bold; color: black; font-size: 16px;">Total Amount:</td>
+                                                            <td style="width: 30%; text-align: right; padding: 8px; background-color: #f1f3f4; border-radius: 4px; font-size: 16px; font-weight: bold;">
+                                                                <span t-field="doc.amount_total" t-options='{"widget": "float", "precision": 0}'/>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Amount in Words Section -->
+                                    <div style="font-family: 'Ubuntu', sans-serif !important; margin-top: 15px; width: 100%;">
+                                        <table style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="width: 30%; text-align: center; padding: 12px; font-size: 12px; color: black; font-weight: bold;">
+                                                    Total Due Amount in Words:
+                                                </td>
+                                                <td style="width: 70%; text-align: center; padding: 12px; font-size: 12px; color: black; background-color: #f1f3f4; border-radius: 4px;">
+                                                    <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </t>
+
+                              
+
+                                <!-- Terms and Conditions -->
+                                <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 16px; font-weight: bold; margin: 20px 0 10px 0; color: black;  padding-bottom: 5px; text-decoration: underline;">Terms and Conditions</div>
+                                <div style="font-family: 'Ubuntu', sans-serif !important; margin-bottom: 20px;">
+                                    
+                                    <ul style="font-family: 'Ubuntu', sans-serif !important;">
+                                    <li style="font-family: 'Ubuntu', sans-serif !important;">All the prices mentioned above are without VAT</li>
+                                    <li style="font-family: 'Ubuntu', sans-serif !important;">Above prices are applicable for one-way trips only. Same prices are implied vice versa.</li>
+                                    <li style="font-family: 'Ubuntu', sans-serif !important;">The charges only include the car, driver, and fuel. Any additional services required must be requested in advance.</li>
+                                    </ul>
+                                </div>
+
+
+                                <!-- Bookings Amendments -->
+
+
+                                <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 16px; font-weight: bold; margin: 20px 0 10px 0; color: black;  padding-bottom: 5px; text-decoration: underline;">Booking Amendments</div>
+                                <div style="font-family: 'Ubuntu', sans-serif !important; margin-bottom: 20px;">
+                                    
+                                    <ul style="font-family: 'Ubuntu', sans-serif !important;">
+                                    <li style="font-family: 'Ubuntu', sans-serif !important;">Changes to pick up times are requested to be made with a minimum of 2 hours' notice</li>
+                                    <li style="font-family: 'Ubuntu', sans-serif !important;">Any amendments to your booking after confirmation can only be accepted subject to availability. DS Rent reserves
+the right to charge an amendment fee in respect of any change to your booking.</li>
+                                    <li style="font-family: 'Ubuntu', sans-serif !important;">DS Rent will attempt to accommodate the change. If DS Rent cannot reallocate that booking, then DS Rent reserves t
+he right to refuse and cancel the amended booking and charge cancellation fees in accordance with the Cancellation Polic
+y (Will be detailed in contract).</li>
+                                    </ul>
+                                </div>
+
+
+
+<!-- Terminiation of reservation -->
+
+   <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 16px; font-weight: bold; margin: 20px 0 10px 0; color: #2c3e50;  padding-bottom: 5px; text-decoration: underline;">Terminiation of Reservation</div>
+                            <div style="font-family: 'Ubuntu', sans-serif !important; margin-bottom: 20px;">
+                                
+                                <ul style="font-family: 'Ubuntu', sans-serif !important;">
+                                <li style="font-family: 'Ubuntu', sans-serif !important;">DS Rent reserves the right to immediately cancel any reservation without refund if the Chauffeur feels that the passe
+nger placing the Chauffeur, passengers, or limousine in danger.</li>
+                                <li style="font-family: 'Ubuntu', sans-serif !important;">If the passenger is in the possession of
+any illegal material and/or substance, the service will be cancelled without refund. This is without exception.</li>
+                                </ul>
+                            </div>
+
+
+
+
+<!-- Feature of reservation -->
+
+   <div style="font-family: Arial, sans-serif !important; font-size: 16px; font-weight: bold; margin: 20px 0 10px 0; color: #2c3e50;  padding-bottom: 5px; text-decoration: underline;">Features</div>
+                                                         <div style="font-family: Arial, sans-serif !important; margin-bottom: 20px;">
+                                
+                                <ul style="font-family: Arial, sans-serif !important;">
+                                <li style="font-family: Arial, sans-serif !important;">All vehicles are of the latest models</li>
+                                <li style="font-family: Arial, sans-serif !important;">All vehicles are equipped with GPS for necessary tracing.</li>
+                                <li style="font-family: Arial, sans-serif !important;">100% Safety record.</li>
+                                <li style="font-family: Arial, sans-serif !important;">Drivers are complied with Dress code.</li>
+                                <li style="font-family: Arial, sans-serif !important;">All Vehicles are having Refreshments like Water Bottels, Juices, Facial Tissues and sanitisers.</li>
+                                <li>We also provide a distinguished service according to the guest’s request, such as chocolates, flowers, gifts etc. with
+extra Charges</li>
+<li style="font-family: Arial, sans-serif !important;">n case of breakdowns or emergences a standby vehicle will be available as replacement to handle the
+situation with the utmost care.</li>
+<li style="font-family: Arial, sans-serif !important;">24/7 Roadside Assistance.</li>
+                                </ul>
+                            </div>
+                            
+
+
+                                </div>
+                        </div>
+                    </main>
+                    
+                    <!-- Page Footer -->
+                    <t t-call="car_booking.car_booking_quotation_footer"/>
+                </t>
+            </t>
+        </template>
+
+        <!-- Page Header Template -->
+        <template id="car_booking_quotation_header" name="Car Booking Quotation Header">
+            <div style="text-align: center; margin: 0 0 30px 0; padding-bottom: 20px; border-bottom: 2px solid #333;">
+                <t t-if="company and company.image_field_1">
+                    <img t-att-src="image_data_uri(company.image_field_1)" alt="Company Logo" style="width: 100%; height: auto; margin-bottom: 15px;"/>
+                </t>
+                <div style="font-family: 'Segoe UI', 'Arial Unicode MS', 'Tahoma', sans-serif !important; font-size: 28px; font-weight: 900; margin: 10px 0; color: black; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); text-align: center; direction: ltr; unicode-bidi: embed;">
+                    <div style="margin-bottom: 5px;">Quotation</div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Page Footer Template -->
+        <template id="car_booking_quotation_footer" name="Car Booking Quotation Footer">
+            <div class="page-footer">
+                <t t-if="company and company.image_field_2">
+                    <img t-att-src="image_data_uri(company.image_field_2)" alt="Company Footer" style="max-width: 100%; max-height: 60px; margin-bottom: 10px;" />
+                </t>
+                <p>For Enquiries please call 800 301 3000 - (966) 596 430 986<br/>DS Rent-Price Quotation</p>
+            </div>
+        </template>
+
+        <!-- Report Action for Car Booking Quotation -->
+        <record id="action_report_car_booking_quotation" model="ir.actions.report">
+            <field name="name">Car Booking Quotation</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">car_booking.car_booking_quotation_template</field>
+            <field name="report_file">car_booking.car_booking_quotation_template</field>
+            <field name="print_report_name">'Car Booking Quotation - %s' % (object.name)</field>
+            <field name="paperformat_id" ref="paperformat_car_booking"/>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_type">report</field>
+
+        </record>
+
+    </data>
+</odoo> 

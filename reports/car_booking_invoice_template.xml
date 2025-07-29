@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="car_booking_invoice_template">
+            <t t-call="web.html_container">
+                <t t-if="not o" t-set="o" t-value="docs" />
+                <t t-set="company" t-value="company_id" />
+
+                <main>
+                    <!-- Header Section -->
+                    <div class="header">
+                        <div>
+                            <img t-if="company.image_field_1" t-att-src="image_data_uri(company.image_field_1)" alt="Company Header" class="float-left" style="width: 100%; max-width: 210mm; height: 30mm;" />
+                        </div>
+                    </div>
+
+                    <!-- Body Section -->
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <div>
+                        <t t-foreach="docs" t-as="doc">
+                            <div class="page" style="font-size: 12px; line-height: 1.2;">
+                                <!-- Invoice Details -->
+                                <p class="text-center" style="margin-bottom: 20px; font-size: 18px;">CAR BOOKING INVOICE</p>
+                                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                                    <tr>
+                                        <td style="vertical-align: top; text-align: left; width: 50%;">
+                                            Invoice No: <span t-field="doc.name"/>
+                                            <br/>
+                                            <span t-field="doc.invoice_date" t-options='{"widget": "date"}'/>
+                                            <br/>
+                                            <span t-field="doc.payment_reference"/>
+                                        </td>
+                                        <td style="text-align: left; width: 50%;"> 
+                                            Customer: <span t-field="doc.partner_id.name"/>
+                                            <br/>
+                                            <p style="margin: 0; padding: 0;">Address: <span t-field="doc.partner_id.street"/>
+                                            </p>
+                                            <p style="margin: 0; padding: 0;">Phone: <span t-field="doc.partner_id.phone"/>
+                                            </p>
+                                            <p style="margin: 0; padding: 0;">Email: <span t-field="doc.partner_id.email"/>
+                                            </p>
+                                            <p style="margin: 0; padding: 0;">VAT: <span t-field="doc.partner_id.vat"/>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <!-- Car Booking Details Section -->
+                                <t t-if="doc.invoice_line_ids">
+                                    <h3 style="font-size: 14px;">Car Booking Details</h3>
+                                    <table class="table table-condensed" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                        <thead>
+                                            <tr style="background-color: #f2f2f2;">
+                                                <th style="padding: 4px; border: 1px solid black;">#</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Service Description</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Car Details</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Booking Period</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Unit Price</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size: 12px;">
+                                            <t t-foreach="enumerate(doc.invoice_line_ids, start=1)" t-as="line">
+                                                <tr>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <t t-esc="line[0]"/>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="line[1].name"/>
+                                                        <br/>
+                                                        <small style="color: #666;">
+                                                            <span t-field="line[1].product_id.name"/>
+                                                        </small>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="line[1].product_id.display_name"/>
+                                                        <br/>
+                                                        <small style="color: #666;">
+                                                            <span t-field="line[1].product_id.year_model_id.name"/>
+                                                        </small>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="line[1].product_id.start_date" t-options='{"widget": "date"}'/>
+                                                        <br/>
+                                                        to
+                                                        <br/>
+                                                        <span t-field="line[1].product_id.end_date" t-options='{"widget": "date"}'/>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="line[1].price_unit" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="line[1].price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="5" style="padding: 4px; border: 1px solid black; text-align: right;">
+                                                    <strong>Sub Total:</strong>
+                                                </td>
+                                                <td style="padding: 4px; border: 1px solid black;">
+                                                    <span t-field="doc.amount_untaxed" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5" style="padding: 4px; border: 1px solid black; text-align: right;">
+                                                    <strong>VAT 15%:</strong>
+                                                </td>
+                                                <td style="padding: 4px; border: 1px solid black;">
+                                                    <span t-field="doc.amount_tax" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                            <tr style="background-color: #f2f2f2;">
+                                                <td colspan="5" style="padding: 4px; border: 1px solid black; text-align: right;">
+                                                    <strong>Total Amount:</strong>
+                                                </td>
+                                                <td style="padding: 4px; border: 1px solid black;">
+                                                    <strong><span t-field="doc.amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </t>
+
+                                <!-- Additional Services Section -->
+                                <t t-if="doc.invoice_line_ids">
+                                    <h3 style="font-size: 14px; margin-top: 20px;">Additional Services</h3>
+                                    <table class="table table-condensed" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                        <thead>
+                                            <tr style="background-color: #f2f2f2;">
+                                                <th style="padding: 4px; border: 1px solid black;">Service</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Description</th>
+                                                <th style="padding: 4px; border: 1px solid black;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size: 12px;">
+                                            <t t-foreach="doc.invoice_line_ids.filtered(lambda l: l.product_id.is_extra_service)" t-as="service">
+                                                <tr>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="service.product_id.name"/>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="service.name"/>
+                                                    </td>
+                                                    <td style="padding: 4px; border: 1px solid black;">
+                                                        <span t-field="service.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+
+                                <!-- Terms and Conditions Section -->
+                                <div style="margin-top: 20px; font-size: 12px; border-top: 1px solid #000; padding-top: 10px;">
+                                    <p>
+                                        <strong>Terms and Conditions:</strong>
+                                    </p>
+                                    <p style="margin: 0; padding: 0;">
+                                        <span t-field="doc.payment_term_id.name"/>
+                                    </p>
+                                    <p style="margin: 0; padding: 0;">
+                                        Payment is due within 30 days of invoice date.
+                                    </p>
+                                </div>
+
+                                <!-- Bank Details Section -->
+                                <div style="margin-top: 20px; font-size: 12px; border-top: 1px solid #000; padding-top: 10px;">
+                                    <p>
+                                        <strong>Bank Details:</strong>
+                                    </p>
+                                    <p style="margin: 0; padding: 0;">Bank: <span t-field="company.bank_account_id.bank_id.name"/>
+                                    </p>
+                                    <p style="margin: 0; padding: 0;">Account: <span t-field="company.bank_account_id.acc_number"/>
+                                    </p>
+                                    <p style="margin: 0; padding: 0;">IBAN: <span t-field="company.bank_account_id.iban"/>
+                                    </p>
+                                </div>
+
+                                <!-- Footer Section -->
+                                <div class="custom-footer" style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 10px;">
+                                    <img t-if="company.image_field_2" 
+                                         t-att-src="image_data_uri(company.image_field_2)" 
+                                         alt="Company Footer" 
+                                         style="width: 100%; height: auto;" />
+                                    <p style="font-size: 10px; margin: 0;">Thank you for choosing our car booking service!</p>
+                                </div>
+                            </div>        <!-- End of page -->
+                        </t>
+                    </div>    <!-- End of body -->
+                </main>
+
+            </t>
+        </template>
+
+        <!-- Report Action for Car Booking Invoice -->
+        <record id="action_report_car_booking_invoice" model="ir.actions.report">
+            <field name="name">Car Booking Invoice</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">car_booking.car_booking_invoice_template</field>
+            <field name="report_file">car_booking.car_booking_invoice_template</field>
+            <field name="print_report_name">'Car Booking Invoice - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="binding_type">report</field>
+            <field name="domain">[('move_type', '=', 'out_invoice')]</field>
+        </record>
+
+    </data>
+</odoo>

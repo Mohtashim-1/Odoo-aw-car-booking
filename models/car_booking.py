@@ -198,6 +198,7 @@ class CarBooking(models.Model):
                     'quantity': line.extra_hour_charges,
                     'price_unit': line.amount,
                     'name': f'Extra Hour Charges ({line.extra_hour_charges} hrs)',
+                    'car_booking_line_id': line.id,
                 }))
             # Main booking line
             else: 
@@ -206,6 +207,7 @@ class CarBooking(models.Model):
                 'quantity': line.qty * line.duration,  # Assuming qty is per day
                 'price_unit': line.unit_price,
                 'name': line.product_id.name,
+                'car_booking_line_id': line.id,
                 }))
 
         # Create invoice
@@ -213,6 +215,7 @@ class CarBooking(models.Model):
             'move_type': 'out_invoice',
             'partner_id': self.customer_name.id,
             'invoice_line_ids': invoice_lines,
+            'car_booking_id': self.id,
         })
 
         self.invoice_id = invoice.id

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="sales_order_report_template">
+            <t t-call="web.html_container">
+                <t t-if="not o" t-set="o" t-value="docs" />
+                <t t-set="company" t-value="company_id" />
+
+                <main>
+                    <!-- Simple Hello World Content -->
+                    <div style="text-align: center; padding: 50px;">
+                        <h1>Hello World</h1>
+                    </div>
+                </main>
+
+            </t>
+        </template>
+
+        <!-- Report Action for Sales Order -->
+        <record id="action_report_sales_order" model="ir.actions.report">
+            <field name="name">Sales Order Report</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">car_booking.sales_order_report_template</field>
+            <field name="report_file">car_booking.sales_order_report_template</field>
+            <field name="print_report_name">'Sales Order - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo> 
