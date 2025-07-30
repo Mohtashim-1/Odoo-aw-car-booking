@@ -2,7 +2,7 @@
     'name': 'Car Booking',
     'version': '18.0',
     'depends': ['base','fleet','project',
-                 'contacts', 'account','stock'],
+                 'contacts', 'account','stock','sale'],
     'data': [
         'security/car_booking_groups.xml',
         'security/ir.model.access.csv',
