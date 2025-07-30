@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit Sale Order Form View to Add Service Type Field to Order Lines -->
+        <record id="view_order_form_inherit_car_booking" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.car.booking</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']//list//field[@name='product_uom_qty']" position="after">
+                    <field name="service_type" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit Sale Order Line Tree View to Add Service Type Field -->
+        <record id="view_sale_order_line_tree_inherit_car_booking" model="ir.ui.view">
+            <field name="name">sale.order.line.tree.inherit.car.booking</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.view_order_line_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_qty']" position="after">
+                    <field name="service_type" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit Sale Order Line Form View to Add Service Type Field -->
+        <record id="view_sale_order_line_form_inherit_car_booking" model="ir.ui.view">
+            <field name="name">sale.order.line.form.inherit.car.booking</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_qty']" position="after">
+                    <field name="service_type"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo> 

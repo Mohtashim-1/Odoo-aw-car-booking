@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Partner Form View - Add Arabic Fields -->
+        <record id="view_partner_form_inherit_arabic" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.arabic</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="name_arabic" placeholder="الاسم بالعربية"/>
+                </xpath>
+                <xpath expr="//field[@name='street']" position="after">
+                    <field name="street_arabic" placeholder="العنوان السطر الأول بالعربية"/>
+                </xpath>
+                <xpath expr="//field[@name='street2']" position="after">
+                    <field name="street2_arabic" placeholder="العنوان السطر الثاني بالعربية"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo> 

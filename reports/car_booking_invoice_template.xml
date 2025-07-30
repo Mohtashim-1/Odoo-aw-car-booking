@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <!-- Car Booking Invoice Template -->
+    <template id="car_booking_invoice_template" name="Car Booking Invoice Template">
+        <t t-foreach="docs" t-as="doc">
+            <t t-set="company" t-value="doc.company_id" />
+            <t t-set="arabic_text" t-value="'فاتورة ضريبية'" />
+            
+            <t t-call="web.html_container">
+                <head>
+                    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700;900&amp;display=swap');
+                        .arabic-text {
+                            font-family: 'DroidArabicNaskh', 'Noto Sans Arabic', 'Arial Unicode MS', sans-serif !important;
+                            direction: rtl;
+                            text-align: center;
+                            font-weight: 700;
+                        }
+                        .page-footer {
+                            text-align: center;
+                            font-size: 8px;
+                            color: black;
+                            background: white;
+                            padding: 10px 0;
+                            margin-top: 20px;
+                        }
+                        .page-break {
+                            page-break-before: always;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-size: 10px;
+                            line-height: 1.2;
+                        }
+                        .compact-table {
+                            font-size: 9px;
+                        }
+                        .compact-table th,
+                        .compact-table td {
+                            padding: 4px 6px;
+                        }
+                        .compact-section {
+                            margin: 8px 0;
+                        }
+                        .compact-section h3 {
+                            font-size: 12px;
+                            margin: 5px 0;
+                        }
+                        .compact-section ul {
+                            margin: 3px 0;
+                            padding-left: 15px;
+                        }
+                        .compact-section li {
+                            margin-bottom: 2px;
+                            font-size: 9px;
+                        }
+                    </style>
+                </head>
+                <main style="margin: 0 !important; padding: 0 !important; border: none !important; background: white !important;">
+                    <div style="font-family: 'Ubuntu', sans-serif !important; margin: 0 !important; padding: 15px !important; font-size: 10px; line-height: 1.2; color: black;">
+                         
+                        <!-- Page Header -->
+                        <t t-call="car_booking.car_booking_invoice_header"/>
+
+                        <!-- Main Content -->
+                        <div style="margin-bottom: 10px;">
+                            <!-- Invoice Information -->
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <div style="width: 60%;">
+                                        <div><span style="font-weight: bold; color: black; font-size: 10px;">Invoice Number:</span> <span t-field="doc.name"/></div>
+                                        <div><span style="font-weight: bold; color: black; font-size: 10px;">Booking Ref:</span> <span t-field="doc.booking_ref"/></div>
+                                        <div><span style="color: black; font-size: 10px;">Invoice Date:</span> <span t-field="doc.invoice_date" t-options='{"widget": "date", "format": "EEEE, MMMM d, yyyy"}'/></div>
+                                        <div><span style="color: black; font-size: 10px;">Due Date:</span> <span t-field="doc.invoice_date_due" t-options='{"widget": "date", "format": "EEEE, MMMM d, yyyy"}'/></div>
+                                    </div>
+                                 
+                                </div>
+                            </div>
+
+
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                   
+                                    <div style="width: 60%;">
+                                        <div><span style="font-weight: bold; color: black; font-size: 10px;">Customer:</span> <span t-field="doc.partner_id.name"/></div>
+                                        <div><span style="font-weight: bold; color: black; font-size: 10px;">Address:</span> <span t-field="doc.partner_id.street"/></div>
+                                        <div><span style="font-weight: bold; color: black; font-size: 10px;">VAT Number:</span> <span t-field="doc.partner_id.vat"/></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Car Booking Services -->
+                            <t t-if="doc.invoice_line_ids">
+                                <table class="compact-table" style="font-family: 'Ubuntu', sans-serif !important; width: 100%; border-collapse: collapse; margin: 10px 0; background: white; border: 1px solid black;">
+                                    <thead>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 5%;">#</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Service Type</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Car Type</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Service Start Date</th>
+
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Service End Date</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Duration</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Qty</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Add. Charges</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Price</th>
+                                            <th style="background-color: #f8f9fa; border: 1px solid black; padding: 4px; text-align: center; font-weight: 900; font-size: 10px; width: 10%;">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="enumerate(doc.invoice_line_ids, start=1)" t-as="line">
+                                            <tr>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[0]"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].product_id.name"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].service_type.name"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].date_start" t-options='{"widget": "date", "format": "EEEE, MMMM d, yyyy"}'/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].date_end" t-options='{"widget": "date", "format": "EEEE, MMMM d, yyyy"}'/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].duration"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].quantity" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].additional_charges" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].price_unit" t-options='{"widget": "float", "precision": 0}'/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].price_subtotal" t-options='{"widget": "float", "precision": 0}'/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+
+
+                                <br/><br/><br/>
+                                <hr/>
+
+
+                                <!-- Totals -->
+                                <div style="font-family: 'Ubuntu', sans-serif !important; margin-top: 10px; width: 100%;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <!-- QR Code Section -->
+                                            <td style="width: 25%; vertical-align: top; padding: 5px;">
+                                                <div style="text-align: center;">
+                                                    <img t-att-src="'https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data=' + str(doc.name)" 
+                                                         style="height:100px; width:100px;" 
+                                                         alt="QR Code" />
+                                                </div>
+                                            </td>
+                                            
+                                            <!-- Amounts Section -->
+                                            <td style="width: 75%; vertical-align: top; padding: 5px;">
+                                                <table style="width: 100%; border-collapse: collapse;">
+                                                    <tr>
+                                                        <td style="width: 70%; text-align: right; padding: 4px; font-weight: bold; color: black; font-size: 10px;">Sub Total:</td>
+                                                        <td style="width: 30%; text-align: right; padding: 4px; background-color: #f1f3f4; border-radius: 4px;">
+                                                            <span t-field="doc.amount_untaxed" t-options='{"widget": "float", "precision": 0}'/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width: 70%; text-align: right; padding: 4px; font-weight: bold; color: black; font-size: 10px;">VAT 15%:</td>
+                                                        <td style="width: 30%; text-align: right; padding: 4px; background-color: #f1f3f4; border-radius: 4px;">
+                                                            <span t-field="doc.amount_tax" t-options='{"widget": "float", "precision": 0}'/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width: 70%; text-align: right; padding: 4px; font-weight: bold; color: black; font-size: 14px;">Total Amount:</td>
+                                                        <td style="width: 30%; text-align: right; padding: 4px; background-color: #f1f3f4; border-radius: 4px; font-size: 16px; font-weight: bold;">
+                                                            <span t-field="doc.amount_total" t-options='{"widget": "float", "precision": 0}'/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width: 70%; text-align: right; padding: 4px; font-weight: bold; color: black; font-size: 12px;">Due Amount:</td>
+                                                        <td style="width: 30%; text-align: right; padding: 4px; background-color: #f1f3f4; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                                                            <span t-field="doc.amount_residual" t-options='{"widget": "float", "precision": 0}'/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <!-- Amount in Words Section -->
+                                <div style="font-family: 'Ubuntu', sans-serif !important; margin-top: 8px; width: 100%;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="width: 25%; text-align: center; padding: 6px; font-size: 9px; color: black; font-weight: bold;">
+                                                Total Due Amount in Words:
+                                            </td>
+                                            <td style="width: 75%; text-align: center; padding: 6px; font-size: 9px; color: black; background-color: #f1f3f4; border-radius: 4px;">
+                                                <span t-esc="doc.currency_id.amount_to_text(doc.amount_residual)"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
+                            </t>
+                            <!-- Bank Account Information -->
+                            <div class="compact-section">
+                                <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 12px; font-weight: bold; margin: 8px 0 5px 0; color: black; padding-bottom: 3px; text-decoration: underline;">Bank Account Information</div>
+                                <div style="font-family: 'Ubuntu', sans-serif !important; margin-bottom: 8px;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid black;">
+                                        <thead>
+                                            <tr style="background-color: #f8f9fa;">
+                                                <th colspan="3" style="border: 1px solid black; padding: 4px; text-align: center; font-weight: bold; width: 33%;">Bank Account Information</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center; font-weight: bold;">Bank Name:</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;">Riyadh Bank</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center; font-weight: bold;">Account Name:</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;">DS Rent Company</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center; font-weight: bold;">Account Number:</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;">SA3720000002471164159940</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center; font-weight: bold;">VAT Registration Number:</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;">310809801200003</td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+<br/>
+<br/>
+<br/>
+
+                            <!-- Remarks Section -->
+                            <div class="compact-section">
+                                <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 12px; font-weight: bold; margin: 8px 0 5px 0; color: black; padding-bottom: 3px; text-decoration: underline;">Remarks</div>
+                                
+                            </div>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+                            <!-- Payment Information -->
+                            <div class="compact-section">
+                                <!-- <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 12px; font-weight: bold; margin: 8px 0 5px 0; color: black; padding-bottom: 3px; text-decoration: underline;">Payment Information</div> -->
+                                <div style="font-family: 'Ubuntu', sans-serif !important; margin-bottom: 8px;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+                                        <tr>
+                                            <td style="width: 50%; padding: 2px; font-weight: bold; text-align: center;">Sales:</td>
+                                            <td style="width: 50%; padding: 2px; font-weight: bold; text-align: center;">Received By:</td>
+                                        </tr>
+                                        
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                
+                <!-- Page Footer -->
+                <t t-call="car_booking.car_booking_invoice_footer"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Page Header Template -->
+    <template id="car_booking_invoice_header" name="Car Booking Invoice Header">
+        <div style="text-align: center; margin: 0 0 15px 0; padding-bottom: 10px;">
+            <t t-if="company and company.image_field_1">
+                <img t-att-src="image_data_uri(company.image_field_1)" alt="Company Logo" style="width: 80%; height: auto; margin-bottom: 8px;"/>
+            </t>
+            <div style="font-family: 'Segoe UI', 'Arial Unicode MS', 'Tahoma', sans-serif !important; font-size: 20px; font-weight: 900; margin: 5px 0; color: black; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); text-align: center; direction: ltr; unicode-bidi: embed;">
+                <div style="margin-bottom: 3px;">Tax Invoice</div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Page Footer Template -->
+    <template id="car_booking_invoice_footer" name="Car Booking Invoice Footer">
+        <div class="page-footer">
+            <t t-if="company and company.image_field_2">
+                <img t-att-src="image_data_uri(company.image_field_2)" alt="Company Footer" style="max-width: 100%; max-height: 40px; margin-bottom: 5px;" />
+            </t>
+            <p style="margin: 0; font-size: 8px;">DS Rent-Tax Invoice</p>
+        </div>
+    </template>
+
+    <!-- Report Action for Car Booking Invoice -->
+    <record id="action_report_car_booking_invoice" model="ir.actions.report">
+        <field name="name">Car Booking Invoice</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">car_booking.car_booking_invoice_template</field>
+        <field name="report_file">car_booking.car_booking_invoice_template</field>
+        <field name="print_report_name">'Car Booking Invoice - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="paperformat_car_booking"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</data>
+</odoo>

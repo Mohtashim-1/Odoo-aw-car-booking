@@ -1,0 +1,168 @@
+/* Custom Car Booking Report Styles */
+
+/* Arabic Font Declaration */
+@font-face {
+    font-family: 'DroidArabicNaskh';
+    src: url('../font/Droid Arabic Naskh Regular/Droid Arabic Naskh Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Arabic Text Styles */
+.arabic-text {
+    font-family: 'DroidArabicNaskh', 'Noto Sans Arabic', 'Arial Unicode MS', sans-serif !important;
+    direction: rtl;
+    text-align: center;
+    font-weight: 700;
+}
+
+* {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: Arial, sans-serif !important;
+    color: black !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.o_report_layout_standard {
+    font-family: Arial, sans-serif !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.o_report_layout_standard * {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.o_report_layout_standard .page {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.o_report_layout_standard .page-header {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.o_report_layout_standard .page-footer {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.o_report_layout_standard main {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.o_report_layout_standard table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 20px 0 !important;
+    background: white !important;
+}
+
+.o_report_layout_standard table th {
+    background-color: #f8f9fa !important;
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+    text-align: left !important;
+    font-weight: bold !important;
+    color: #333 !important;
+}
+
+.o_report_layout_standard table td {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+    color: #333 !important;
+}
+
+.o_report_layout_standard .text-center {
+    text-align: center !important;
+}
+
+.o_report_layout_standard .text-right {
+    text-align: right !important;
+}
+
+.o_report_layout_standard .font-weight-bold {
+    font-weight: bold !important;
+}
+
+/* Override any Odoo default styles */
+.o_report_layout_standard * {
+    font-family: Arial, sans-serif !important;
+}
+
+.o_report_layout_standard h1, 
+.o_report_layout_standard h2, 
+.o_report_layout_standard h3, 
+.o_report_layout_standard h4, 
+.o_report_layout_standard h5, 
+.o_report_layout_standard h6 {
+    font-family: Arial, sans-serif !important;
+    color: black !important;
+}
+
+.o_report_layout_standard p {
+    margin: 5px 0 !important;
+    color: black !important;
+}
+
+.o_report_layout_standard .border-bottom {
+    border-bottom: 1px solid #ddd !important;
+    padding-bottom: 5px !important;
+}
+
+.o_report_layout_standard .section-title {
+    font-size: 16px !important;
+    font-weight: bold !important;
+    margin: 20px 0 10px 0 !important;
+    color: #2c3e50 !important;
+    border-bottom: 1px solid #ddd !important;
+    padding-bottom: 5px !important;
+}
+
+.o_report_layout_standard .info-label {
+    font-weight: bold !important;
+    color: #555 !important;
+}
+
+.o_report_layout_standard .totals {
+    text-align: right !important;
+    margin-top: 20px !important;
+}
+
+.o_report_layout_standard .total-row {
+    margin: 5px 0 !important;
+}
+
+.o_report_layout_standard .total-amount {
+    font-size: 16px !important;
+    font-weight: bold !important;
+    color: #2c3e50 !important;
+}
+
+.o_report_layout_standard .footer {
+    margin-top: 30px !important;
+    text-align: center !important;
+    font-size: 10px !important;
+    color: #666 !important;
+}
+
+.o_report_layout_standard img {
+    max-width: 100% !important;
+    height: auto !important;
+} 
