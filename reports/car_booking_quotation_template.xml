@@ -121,7 +121,7 @@
                                             <!-- QR Code Section -->
                                             <td style="width: 25%; vertical-align: top; padding: 5px;">
                                                 <div style="text-align: center;">
-                                                    <img t-att-src="'https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data=' + doc.name" 
+                                                    <img t-att-src="'https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data=' + str(doc.name)" 
                                                          style="height:100px; width:100px;" 
                                                          alt="QR Code" />
                                                 </div>
