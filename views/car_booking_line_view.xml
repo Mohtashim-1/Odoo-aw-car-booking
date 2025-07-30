@@ -102,6 +102,6 @@
 
     <menuitem id="menu_all_car_booking_lines"
               name="Booking Line Dashboard"
-              parent="car_booking.menu_car_booking_root"
+              parent="aw_car_booking.menu_car_booking_root"
               action="action_all_car_booking_lines"/>
 </odoo>

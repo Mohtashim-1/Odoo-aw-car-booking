@@ -46,7 +46,7 @@
     <menuitem
         id="menu_car_airport"
         name="Airports"
-        parent="car_booking.menu_car_booking_root"
+        parent="aw_car_booking.menu_car_booking_root"
         action="action_car_airport"
 
     />

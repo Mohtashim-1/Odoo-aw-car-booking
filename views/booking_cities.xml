@@ -48,7 +48,7 @@
     <menuitem
         id="menu_booking_city"
         name="Cities"
-        parent="car_booking.menu_car_booking_root"
+        parent="aw_car_booking.menu_car_booking_root"
         action="action_booking_city"
 
     />

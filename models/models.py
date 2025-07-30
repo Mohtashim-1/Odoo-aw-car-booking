@@ -12,9 +12,6 @@ class VehicleReceiptDelivery(models.Model):
 class VehicleProfile(models.Model):
 	_name="vehicle.profile"
 
-class TripProfile(models.Model):
-	_name="trip.profile"
-
 
 class BookingCity(models.Model):
 	_name = "booking.city"

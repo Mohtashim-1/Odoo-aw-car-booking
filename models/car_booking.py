@@ -409,20 +409,49 @@ class CarBooking(models.Model):
     def action_view_trip_profile(self):
         """Return an action to view or create the associated trip.profile record."""
         self.ensure_one()
+        print(f"DEBUG: action_view_trip_profile called for booking: {self.name}")
         
         # Use the direct relationship field instead of searching by booking_id
-        if self.trip_profile_id:
-            # Open existing trip profile form
+        trip_profile = self.trip_profile_id
+        try:
+            # Check if trip_profile is a valid record
+            if trip_profile and hasattr(trip_profile, 'name') and trip_profile.name and trip_profile.id:
+                print(f"DEBUG: Existing trip profile found: {trip_profile.name}")
+                # Open existing trip profile form
+                return {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'trip.profile',
+                    'view_mode': 'form',
+                    'res_id': trip_profile.id,
+                    'target': 'current',
+                    'context': self.env.context,
+                }
+        except Exception as e:
+            print(f"DEBUG: Error accessing trip_profile_id: {e}")
+            # Clear the invalid trip_profile_id
+            self.trip_profile_id = False
+        
+        print(f"DEBUG: No existing trip profile, creating new one")
+        # Create trip profile first, then open it
+        try:
+            print(f"DEBUG: Checking if create_from_booking method exists")
+            trip_profile_model = self.env['trip.profile']
+            print(f"DEBUG: Trip profile model: {trip_profile_model}")
+            print(f"DEBUG: Available methods: {[m for m in dir(trip_profile_model) if 'create_from_booking' in m]}")
+            
+            trip_profile = trip_profile_model.create_from_booking(self)
+            print(f"DEBUG: Created trip profile: {trip_profile.name}")
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'trip.profile',
                 'view_mode': 'form',
-                'res_id': self.trip_profile_id.id,
+                'res_id': trip_profile.id,
                 'target': 'current',
                 'context': self.env.context,
             }
-        else:
-            # Create trip profile first, then open it
+        except Exception as e:
+            print(f"DEBUG: Error creating trip profile: {e}")
+            # Fallback to old method
             self._create_trip_profile()
             return {
                 'type': 'ir.actions.act_window',
@@ -444,6 +473,7 @@ class CarBooking(models.Model):
             # -----------------------------------------------------------------
             profile_vals = {
                 'name':                booking.name,                 # Booking Ref
+                'booking_id':          booking.id,                   # Link to car booking
                 'trip_type':           'individual',                 # default – adjust if you have logic
                 'service_type':        'with_driver' if booking.booking_type == 'with_driver' else 'without_driver',
                 'departure_datetime':  booking.service_start_date or booking.booking_date,

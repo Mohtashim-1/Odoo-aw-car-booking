@@ -13,7 +13,7 @@
                 <field name="customer_name" optional="show"/>
                  <field name="guest_name" optional="show"/>
                 <field name="booking_type" optional="show"/>
-                <field name="location_id" optional="show"/>
+                <!-- <field name="location_id" optional="show"/> -->
                 <field name="region" optional="show"/>
                  <field name="flight_number" optional="show"/>
                  <field name="mobile" optional="hide"/>
@@ -95,7 +95,7 @@
                         <group>
                             <field name="region" required="1" widget="selection"/>
                             <field name="city" required="1" options="{'no_create': True}" />
-                            <field name="location_id" string="Branch" options="{'no_create': True}" />
+                            <!-- <field name="location_id" string="Branch" options="{'no_create': True}" /> -->
 
                             
                            
@@ -245,7 +245,7 @@
 
     <menuitem id="menu_car_booking_root"
               name="Car Booking"
-              web_icon="car_booking,static/description/icon.png"
+              web_icon="aw_car_booking,static/description/icon.png"
               sequence="0"/>
 
     <menuitem id="menu_car_booking" name="Bookings" parent="menu_car_booking_root" action="action_car_booking"/>
