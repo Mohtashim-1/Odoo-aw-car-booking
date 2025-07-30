@@ -190,25 +190,10 @@
                                                 <span t-esc="doc.currency_id.amount_to_text(doc.amount_residual)"/>
                                             </td>
                                         </tr>
-
-
-<br>
-<br/>
-<br>
-                                        <tr>
-                                            <td>Remarks:</td>
-
-                                        </tr>
-
-
-
                                     </table>
 
                                 </div>
                             </t>
-
-<br/>
-<br/>
                             <!-- Bank Account Information -->
                             <div class="compact-section">
                                 <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 12px; font-weight: bold; margin: 8px 0 5px 0; color: black; padding-bottom: 3px; text-decoration: underline;">Bank Account Information</div>
@@ -244,18 +229,20 @@
                                     </table>
                                 </div>
                             </div>
-
-                            <br/>
-                            <br/>
-
-                            <br/>
-                            <br/>
-
-                            <br/>
-                            <br/>
+<br/>
+<br/>
+<br/>
 
                             <!-- Remarks Section -->
-                          
+                            <div class="compact-section">
+                                <div style="font-family: 'Ubuntu', sans-serif !important; font-size: 12px; font-weight: bold; margin: 8px 0 5px 0; color: black; padding-bottom: 3px; text-decoration: underline;">Remarks</div>
+                                
+                            </div>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
                             <!-- Payment Information -->
                             <div class="compact-section">
@@ -266,7 +253,7 @@
                                             <td style="width: 50%; padding: 2px; font-weight: bold; text-align: center;">Sales:</td>
                                             <td style="width: 50%; padding: 2px; font-weight: bold; text-align: center;">Received By:</td>
                                         </tr>
-                                       
+                                        
                                     </table>
                                 </div>
                             </div>
