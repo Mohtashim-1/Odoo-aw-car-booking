@@ -8,6 +8,7 @@
         'security/ir.model.access.csv',
         'views/car_booking_views.xml',
         'views/res_company_view.xml',
+        # 'views/res_partner_view.xml',
         'views/sale_order_line_view.xml',
         'data/car_extra_service_data.xml',
         'views/car_extra_service_view.xml',
@@ -19,8 +20,6 @@
         'reports/custom_quotation_template.xml',
         'reports/car_booking_quotation_template.xml',
         'reports/car_booking_invoice_template.xml',
-        'reports/car_booking_proforma_invoice_template.xml',
-        'reports/sales_order_report_template.xml',
         'report/car_booking_report.xml',
         # 'security/car_booking_security.xml'
     ],

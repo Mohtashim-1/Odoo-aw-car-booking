@@ -10,7 +10,7 @@
                     <!-- Header Section -->
                     <div class="header">
                         <div>
-                            <img t-if="company.image_field_1" t-att-src="image_data_uri(company.image_field_1)" alt="Company Header" class="float-left" style="width: 100%; max-width: 210mm; height: 30mm;" />
+                            <img t-if="company and company.image_field_1" t-att-src="image_data_uri(company.image_field_1)" alt="Company Header" class="float-left" style="width: 100%; max-width: 210mm; height: 30mm;" />
                         </div>
                     </div>
 
@@ -176,17 +176,17 @@
                                     <p>
                                         <strong>Bank Details:</strong>
                                     </p>
-                                    <p style="margin: 0; padding: 0;">Bank: <span t-field="company.bank_account_id.bank_id.name"/>
+                                    <p style="margin: 0; padding: 0;">Bank: <span t-field="company.bank_account_id.bank_id.name" t-if="company and company.bank_account_id"/>
                                     </p>
-                                    <p style="margin: 0; padding: 0;">Account: <span t-field="company.bank_account_id.acc_number"/>
+                                    <p style="margin: 0; padding: 0;">Account: <span t-field="company.bank_account_id.acc_number" t-if="company and company.bank_account_id"/>
                                     </p>
-                                    <p style="margin: 0; padding: 0;">IBAN: <span t-field="company.bank_account_id.iban"/>
+                                    <p style="margin: 0; padding: 0;">IBAN: <span t-field="company.bank_account_id.iban" t-if="company and company.bank_account_id"/>
                                     </p>
                                 </div>
 
                                 <!-- Footer Section -->
                                 <div class="custom-footer" style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 10px;">
-                                    <img t-if="company.image_field_2" 
+                                    <img t-if="company and company.image_field_2" 
                                          t-att-src="image_data_uri(company.image_field_2)" 
                                          alt="Company Footer" 
                                          style="width: 100%; height: auto;" />
