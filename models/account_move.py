@@ -117,4 +117,23 @@ class AccountMoveLine(models.Model):
                 delta = end_date - start_date
                 record.duration = max(delta.days, 0)
             else:
-                record.duration = 0.0 
+                record.duration = 0.0
+    
+    @api.onchange('car_booking_line_id')
+    def _onchange_car_booking_line_id(self):
+        """Auto-populate fields when car booking line is selected"""
+        if self.car_booking_line_id:
+            booking_line = self.car_booking_line_id
+            
+            # Populate fields from car booking line
+            self.service_type = booking_line.type_of_service_id.id if booking_line.type_of_service_id else False
+            self.car_type = booking_line.car_model_id.id if booking_line.car_model_id else False
+            self.date_start = booking_line.start_date
+            self.date_end = booking_line.end_date
+            self.additional_charges = booking_line.extra_hour_charges or 0.0
+            self.quantity = booking_line.qty or 1.0
+            self.price_unit = booking_line.unit_price or 0.0
+            
+            # Set product if available
+            if booking_line.product_id:
+                self.product_id = booking_line.product_id.id 

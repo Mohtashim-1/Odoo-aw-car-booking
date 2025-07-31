@@ -10,6 +10,7 @@
         'views/res_company_view.xml',
         'views/res_partner_view.xml',
         'views/sale_order_line_view.xml',
+        'views/account_move_view.xml',
         'data/car_extra_service_data.xml',
         'views/car_extra_service_view.xml',
         'views/booking_cities.xml',
