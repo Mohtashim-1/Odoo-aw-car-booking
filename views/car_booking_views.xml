@@ -60,6 +60,28 @@
 
     <!-- Statusbar -->
     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,scheduled,departed,completed,cancelled"/>
+    
+    <!-- Partner Category Management Buttons -->
+    <button name="action_assign_partners_to_categories" 
+            string="Assign Partners to Categories" 
+            type="object" 
+            class="btn-secondary"
+            help="Automatically assign partners to appropriate categories based on their names"/>
+    <button name="action_test_business_type_filter" 
+            string="Test Filter" 
+            type="object" 
+            class="btn-secondary"
+            help="Test the business type filter functionality"/>
+    <button name="action_trigger_business_type_filter" 
+            string="Trigger Filter" 
+            type="object" 
+            class="btn-secondary"
+            help="Manually trigger the business type filter"/>
+    <button name="action_check_field_configuration" 
+            string="Check Fields" 
+            type="object" 
+            class="btn-secondary"
+            help="Check field configuration and view setup"/>
 </header>
             <sheet>
             

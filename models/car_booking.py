@@ -61,7 +61,10 @@ class CarBooking(models.Model):
         ('company', 'Company'),
         ('individual', 'Individual')
     ], string='Customer Type')
-    customer_name = fields.Many2one('res.partner', string='Customer Name')
+    customer_name = fields.Many2one(
+        'res.partner', 
+        string='Customer Name'
+    )
     mobile = fields.Char(string='Mobile')
     customer_ref_number = fields.Char(string='Customer Ref Number')
     hotel_room_number = fields.Char(string='Hotel Room Number')
@@ -126,18 +129,7 @@ class CarBooking(models.Model):
     guest_name = fields.Many2one('res.partner', string='Guest Name')
 
 
-    @api.onchange('business_type')
-    def _onchange_business_type(self):
-        domain = []
-        if self.business_type == 'corporate':
-            domain = [('category_id.name', '=', 'Companies')]
-        elif self.business_type == 'hotels':
-            domain = [('category_id.name', '=', 'Hotels')]
-        elif self.business_type == 'government':
-            domain = [('category_id.name', '=', 'Government')]
-        elif self.business_type in ['individuals', 'rental', 'others']:
-            domain = [('category_id.name', '=', 'Others')]
-        return {'domain': {'customer_name': domain}}
+
 
 
 
@@ -611,6 +603,394 @@ class CarBooking(models.Model):
                 return 'van'
         return 'other'
 
+    def action_ensure_partner_categories_exist(self):
+        """Ensure that all required partner categories exist"""
+        category_mapping = {
+            'corporate': 'Companies',
+            'hotels': 'Hotels', 
+            'government': 'Government',
+            'individuals': 'Individuals',
+            'rental': 'Rental',
+            'others': 'Others'
+        }
+        
+        for business_type, category_name in category_mapping.items():
+            category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+            if not category:
+                self.env['res.partner.category'].create({
+                    'name': category_name,
+                    'color': 1
+                })
+                print(f"Created partner category: {category_name}")
+        
+        return True
+
+    def action_assign_partners_to_categories(self):
+        """Assign partners to appropriate categories based on their business type"""
+        self.action_ensure_partner_categories_exist()
+        
+        # Get all categories
+        categories = self.env['res.partner.category'].search([])
+        category_dict = {cat.name: cat for cat in categories}
+        
+        # Get all partners
+        partners = self.env['res.partner'].search([])
+        assigned_count = 0
+        
+        for partner in partners:
+            # Determine category based on partner name or other criteria
+            category_name = None
+            
+            # Simple logic to categorize partners
+            partner_name_lower = partner.name.lower() if partner.name else ''
+            
+            if any(word in partner_name_lower for word in ['hotel', 'resort', 'inn', 'lodge']):
+                category_name = 'Hotels'
+            elif any(word in partner_name_lower for word in ['corp', 'company', 'ltd', 'inc', 'llc']):
+                category_name = 'Companies'
+            elif any(word in partner_name_lower for word in ['gov', 'ministry', 'department', 'authority']):
+                category_name = 'Government'
+            elif any(word in partner_name_lower for word in ['rental', 'car', 'vehicle']):
+                category_name = 'Rental'
+            else:
+                # Default to Individuals for personal names
+                if not partner.is_company:
+                    category_name = 'Individuals'
+                else:
+                    category_name = 'Others'
+            
+            if category_name and category_name in category_dict:
+                category = category_dict[category_name]
+                if category not in partner.category_id:
+                    partner.category_id = [(4, category.id)]
+                    assigned_count += 1
+                    print(f"DEBUG: Assigned partner '{partner.name}' to category '{category_name}'")
+        
+        # Also fix the typo in existing categories
+        coorporate_category = self.env['res.partner.category'].search([('name', '=', 'Coorporate')], limit=1)
+        if coorporate_category:
+            print(f"DEBUG: Found typo category 'Coorporate', renaming to 'Companies'")
+            coorporate_category.name = 'Companies'
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Partner Categories',
+                'message': f'Assigned {assigned_count} partners to appropriate categories.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
+    def action_test_business_type_filter(self):
+        """Test the business type filter functionality"""
+        self.ensure_one()
+        
+        # Test the filter logic
+        if self.business_type:
+            category_mapping = {
+                'corporate': 'Companies',
+                'hotels': 'Hotels', 
+                'government': 'Government',
+                'individuals': 'Individuals',
+                'rental': 'Rental',
+                'others': 'Others'
+            }
+            
+            category_name = category_mapping.get(self.business_type)
+            if category_name:
+                category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+                if category:
+                    # Count partners in this category
+                    partners_in_category = self.env['res.partner'].search_count([('category_id', 'in', [category.id])])
+                    
+                    # Get some sample partners in this category
+                    sample_partners = self.env['res.partner'].search([('category_id', 'in', [category.id])], limit=5)
+                    partner_names = [p.name for p in sample_partners]
+                    
+                    message = f"Business Type: {self.business_type}\nCategory: {category_name}\nPartners in category: {partners_in_category}\nSample partners: {', '.join(partner_names) if partner_names else 'None'}"
+                else:
+                    message = f"Category '{category_name}' not found. Creating it now..."
+                    category = self.env['res.partner.category'].create({
+                        'name': category_name,
+                        'color': 1
+                    })
+                    message = f"Created category '{category_name}' with ID {category.id}"
+            else:
+                message = f"No category mapping found for business type '{self.business_type}'"
+        else:
+            message = "No business type selected"
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Filter Test',
+                'message': message,
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    def action_trigger_business_type_filter(self):
+        """Manually trigger the business type filter"""
+        self.ensure_one()
+        
+        if not self.business_type:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Filter Error',
+                    'message': 'Please select a Business Type first.',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+        
+        print(f"DEBUG: action_trigger_business_type_filter called for business_type: {self.business_type}")
+        
+        # Manually trigger the onchange
+        result = self._onchange_business_type()
+        
+        # Get the domain
+        domain = result.get('domain', {}).get('customer_name', [])
+        
+        message = f"Filter triggered for Business Type: {self.business_type}\nDomain: {domain}"
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Filter Triggered',
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
+    def action_debug_onchange_test(self):
+        """Debug the onchange method and show detailed information"""
+        self.ensure_one()
+        
+        print(f"DEBUG: action_debug_onchange_test called")
+        print(f"DEBUG: Current business_type: {self.business_type}")
+        print(f"DEBUG: Current customer_name: {self.customer_name.name if self.customer_name else 'None'}")
+        
+        # Test the onchange method
+        result = self._onchange_business_type()
+        
+        # Show all partner categories
+        categories = self.env['res.partner.category'].search([])
+        category_info = "\n".join([f"- {cat.name} (ID: {cat.id})" for cat in categories[:10]])
+        
+        # Show sample partners with their categories
+        partners = self.env['res.partner'].search([], limit=10)
+        partner_info = "\n".join([f"- {partner.name}: {partner.category_id.name if partner.category_id else 'No category'}" for partner in partners])
+        
+        message = f"""
+Business Type: {self.business_type}
+Customer Name: {self.customer_name.name if self.customer_name else 'None'}
+
+Onchange Result: {result}
+
+Available Categories:
+{category_info}
+
+Sample Partners:
+{partner_info}
+        """
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Debug Information',
+                'message': message,
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    def action_check_field_configuration(self):
+        """Check the field configuration and view setup"""
+        self.ensure_one()
+        
+        print(f"DEBUG: action_check_field_configuration called")
+        
+        # Check if the fields exist and are properly configured
+        print(f"DEBUG: business_type field exists: {hasattr(self, 'business_type')}")
+        print(f"DEBUG: customer_name field exists: {hasattr(self, 'customer_name')}")
+        
+        if hasattr(self, 'business_type'):
+            print(f"DEBUG: business_type value: {self.business_type}")
+            print(f"DEBUG: business_type field type: {type(self.business_type)}")
+        
+        if hasattr(self, 'customer_name'):
+            print(f"DEBUG: customer_name value: {self.customer_name}")
+            print(f"DEBUG: customer_name field type: {type(self.customer_name)}")
+        
+        # Check the model fields
+        model_fields = self.env['ir.model.fields'].search([
+            ('model', '=', 'car.booking'),
+            ('name', 'in', ['business_type', 'customer_name'])
+        ])
+        
+        print(f"DEBUG: Model fields found: {[f.name for f in model_fields]}")
+        
+        # Check if there are any domain restrictions on customer_name
+        customer_name_field = self.env['ir.model.fields'].search([
+            ('model', '=', 'car.booking'),
+            ('name', '=', 'customer_name')
+        ], limit=1)
+        
+        if customer_name_field:
+            print(f"DEBUG: customer_name field configuration: {customer_name_field.read()}")
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Field Configuration Check',
+                'message': f'Business Type field exists: {hasattr(self, "business_type")}\nCustomer Name field exists: {hasattr(self, "customer_name")}\nBusiness Type value: {self.business_type}\nCustomer Name value: {self.customer_name.name if self.customer_name else "None"}',
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    def action_force_business_type_filter(self):
+        """Force trigger the business type filter and apply it immediately"""
+        self.ensure_one()
+        
+        if not self.business_type:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Filter Error',
+                    'message': 'Please select a Business Type first.',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+        
+        print(f"DEBUG: action_force_business_type_filter called for business_type: {self.business_type}")
+        
+        # Manually trigger the onchange
+        result = self._onchange_business_type()
+        
+        # Get the domain
+        domain = result.get('domain', {}).get('customer_name', [])
+        
+        # Force update the customer_name field domain
+        if domain:
+            # This will force the field to refresh with the new domain
+            self.env.context = dict(self.env.context, force_domain={'customer_name': domain})
+        
+        message = f"Filter applied for Business Type: {self.business_type}\nDomain: {domain}\nPlease click on Customer Name field to see filtered results."
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Filter Applied',
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
+    def _get_customer_domain(self):
+        """Return domain for customer_name based on business_type"""
+        if not self.business_type:
+            return []
+        
+        # Define the mapping between business_type and partner category names
+        category_mapping = {
+            'corporate': 'Companies',
+            'hotels': 'Hotels', 
+            'government': 'Government',
+            'individuals': 'Individuals',
+            'rental': 'Rental',
+            'others': 'Others'
+        }
+        
+        category_name = category_mapping.get(self.business_type)
+        if not category_name:
+            return []
+        
+        # Find the category
+        category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+        if not category:
+            # Create the category if it doesn't exist
+            category = self.env['res.partner.category'].create({
+                'name': category_name,
+                'color': 1
+            })
+        
+        return [('category_id', 'in', [category.id])]
+
+    @api.onchange('business_type')
+    def _onchange_business_type(self):
+        """Filter customer_name based on business_type matching partner categories"""
+        print(f"DEBUG: _onchange_business_type called with business_type: {self.business_type}")
+        
+        if self.business_type:
+            # Define the mapping between business_type and partner category names
+            category_mapping = {
+                'corporate': 'Companies',
+                'hotels': 'Hotels', 
+                'government': 'Government',
+                'individuals': 'Individuals',
+                'rental': 'Rental',
+                'others': 'Others'
+            }
+            
+            category_name = category_mapping.get(self.business_type)
+            print(f"DEBUG: Mapped business_type '{self.business_type}' to category '{category_name}'")
+            
+            if category_name:
+                # Find or create the category
+                category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+                print(f"DEBUG: Found category: {category.name if category else 'None'}")
+                
+                if not category:
+                    category = self.env['res.partner.category'].create({
+                        'name': category_name,
+                        'color': 1
+                    })
+                    print(f"DEBUG: Created new category '{category_name}' with ID {category.id}")
+                
+                # Clear customer_name if it doesn't match the new category
+                if self.customer_name and self.customer_name.category_id != category:
+                    print(f"DEBUG: Clearing customer_name '{self.customer_name.name}' as it doesn't match category")
+                    self.customer_name = False
+                
+                domain = [('category_id', 'in', [category.id])]
+                print(f"DEBUG: Returning domain: {domain}")
+                
+                # Force the field to refresh by temporarily clearing and setting it
+                current_customer = self.customer_name
+                self.customer_name = False
+                
+                return {
+                    'domain': {
+                        'customer_name': domain
+                    },
+                    'value': {
+                        'customer_name': current_customer.id if current_customer else False
+                    }
+                }
+        else:
+            # If no business_type, show all partners
+            print("DEBUG: No business_type selected, showing all partners")
+            return {
+                'domain': {
+                    'customer_name': []
+                }
+            }
+
     # Rest of the existing methods (unchanged)
     def duplicate_booking(self):
         self.ensure_one()
@@ -994,3 +1374,68 @@ class CarBookingLine(models.Model):
                 record.duration = max(delta.days, 0)
             else:
                 record.duration = 0.0
+
+    def action_test_filter_manually(self):
+        """Test the filter manually to see what's happening"""
+        self.ensure_one()
+        
+        if not self.business_type:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Test Error',
+                    'message': 'Please select a Business Type first.',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+        
+        # Define the mapping
+        category_mapping = {
+            'corporate': 'Companies',
+            'hotels': 'Hotels', 
+            'government': 'Government',
+            'individuals': 'Individuals',
+            'rental': 'Rental',
+            'others': 'Others'
+        }
+        
+        category_name = category_mapping.get(self.business_type)
+        category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+        
+        if not category:
+            category = self.env['res.partner.category'].create({
+                'name': category_name,
+                'color': 1
+            })
+        
+        # Test the domain
+        domain = [('category_id', 'in', [category.id])]
+        matching_partners = self.env['res.partner'].search(domain)
+        
+        # Get all partners for comparison
+        all_partners = self.env['res.partner'].search([], limit=10)
+        
+        message = f"""
+Business Type: {self.business_type}
+Category: {category.name} (ID: {category.id})
+Domain: {domain}
+
+Matching Partners ({len(matching_partners)}):
+{chr(10).join([f"- {p.name} (ID: {p.id})" for p in matching_partners[:5]])}
+
+All Partners Sample:
+{chr(10).join([f"- {p.name}: {p.category_id.name if p.category_id else 'No category'}" for p in all_partners])}
+        """
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Manual Filter Test',
+                'message': message,
+                'type': 'info',
+                'sticky': False,
+            }
+        }

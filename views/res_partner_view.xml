@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Partner Form View - Add Arabic Fields -->
-        <record id="view_partner_form_inherit_arabic" model="ir.ui.view">
-            <field name="name">res.partner.form.inherit.arabic</field>
+        <!-- Partner Form View - Add Custom Fields -->
+        <record id="view_partner_form_inherit_custom" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.custom</field>
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='name']" position="after">
-                    <field name="name_arabic" placeholder="الاسم بالعربية"/>
+                <xpath expr="//field[@name='email']" position="after">
+                    <field name="customized_mobile" placeholder="Customized Mobile Number"/>
+                    <field name="national_identity_number" placeholder="National Identity Number"/>
+                    <field name="id_no" placeholder="Driver ID Number"/>
                 </xpath>
-                <xpath expr="//field[@name='street']" position="after">
-                    <field name="street_arabic" placeholder="العنوان السطر الأول بالعربية"/>
-                </xpath>
-                <xpath expr="//field[@name='street2']" position="after">
-                    <field name="street2_arabic" placeholder="العنوان السطر الثاني بالعربية"/>
+            </field>
+        </record>
+
+        <!-- Partner Form View - Add Custom Fields Alternative -->
+        <record id="view_partner_form_inherit_custom_alt" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.custom.alt</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='website']" position="after">
+                    <field name="customized_mobile" placeholder="Customized Mobile Number"/>
+                    <field name="national_identity_number" placeholder="National Identity Number"/>
+                    <field name="id_no" placeholder="Driver ID Number"/>
                 </xpath>
             </field>
         </record>

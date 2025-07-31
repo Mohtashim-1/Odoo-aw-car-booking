@@ -140,8 +140,8 @@
             <field name="name">Custom Quotation</field>
             <field name="model">sale.order</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">car_booking.custom_quotation_template</field>
-            <field name="report_file">car_booking.custom_quotation_template</field>
+            <field name="report_name">aw_car_booking.custom_quotation_template</field>
+            <field name="report_file">aw_car_booking.custom_quotation_template</field>
             <field name="print_report_name">'Custom Quotation - %s' % (object.name)</field>
             <field name="binding_model_id" ref="sale.model_sale_order"/>
             <field name="binding_type">report</field>
