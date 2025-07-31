@@ -63,8 +63,10 @@ class CarBooking(models.Model):
     ], string='Customer Type')
     customer_name = fields.Many2one(
         'res.partner', 
-        string='Customer Name'
+        string='Customer Name',
+        domain="[('category_id', '=', customer_domain_category_id)]"
     )
+    
     mobile = fields.Char(string='Mobile')
     customer_ref_number = fields.Char(string='Customer Ref Number')
     hotel_room_number = fields.Char(string='Hotel Room Number')
@@ -125,6 +127,42 @@ class CarBooking(models.Model):
         ('rental', 'Rental'),
         ('others', 'Others'),
     ], string='Business Type')
+    
+    # Computed field to help with domain filtering
+    customer_domain_category_id = fields.Many2one(
+        'res.partner.category',
+        string='Customer Domain Category',
+        compute='_compute_customer_domain_category',
+        store=False
+    )
+    
+    @api.depends('business_type')
+    def _compute_customer_domain_category(self):
+        """Compute the category ID for customer domain filtering"""
+        for record in self:
+            if record.business_type:
+                category_mapping = {
+                    'corporate': 'Companies',
+                    'hotels': 'Hotels', 
+                    'government': 'Government',
+                    'individuals': 'Individuals',
+                    'rental': 'Rental',
+                    'others': 'Others'
+                }
+                
+                category_name = category_mapping.get(record.business_type)
+                if category_name:
+                    category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+                    if not category:
+                        category = self.env['res.partner.category'].create({
+                            'name': category_name,
+                            'color': 1
+                        })
+                    record.customer_domain_category_id = category.id
+                else:
+                    record.customer_domain_category_id = False
+            else:
+                record.customer_domain_category_id = False
 
     guest_name = fields.Many2one('res.partner', string='Guest Name')
 
@@ -967,27 +1005,25 @@ Sample Partners:
                     print(f"DEBUG: Clearing customer_name '{self.customer_name.name}' as it doesn't match category")
                     self.customer_name = False
                 
+                # Test the domain to see how many partners match
                 domain = [('category_id', 'in', [category.id])]
-                print(f"DEBUG: Returning domain: {domain}")
+                matching_partners = self.env['res.partner'].search(domain)
+                print(f"DEBUG: Found {len(matching_partners)} partners matching domain")
+                for partner in matching_partners[:5]:  # Show first 5 for debugging
+                    print(f"DEBUG: Matching partner: {partner.name} (ID: {partner.id})")
                 
-                # Force the field to refresh by temporarily clearing and setting it
-                current_customer = self.customer_name
-                self.customer_name = False
-                
+                # Force field refresh
                 return {
-                    'domain': {
-                        'customer_name': domain
-                    },
                     'value': {
-                        'customer_name': current_customer.id if current_customer else False
+                        'customer_name': False
                     }
                 }
         else:
             # If no business_type, show all partners
             print("DEBUG: No business_type selected, showing all partners")
             return {
-                'domain': {
-                    'customer_name': []
+                'value': {
+                    'customer_name': False
                 }
             }
 
