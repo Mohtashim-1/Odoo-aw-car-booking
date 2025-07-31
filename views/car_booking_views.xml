@@ -86,6 +86,7 @@
             class="btn-secondary"
             invisible="1"
             help="Check field configuration and view setup"/>
+
 </header>
             <sheet>
             

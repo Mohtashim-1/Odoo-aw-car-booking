@@ -6,7 +6,6 @@ class CarBooking(models.Model):
     _description = 'Car Booking'
 
     # Existing fields (unchanged, included for context)
-    flight_no = fields.Char(string='Flight Number')
 
 
     location_id = fields.Many2one(
@@ -1135,7 +1134,7 @@ class CarBookingTripLine(models.Model):
     # location_from = fields.Char(string='Location From')
     # location_to = fields.Char(string='Location To')
     trip_time = fields.Datetime(string='Trip Time')
-    flight_no = fields.Char(string='Flight Number')
+
 
     @api.onchange('car_id')
     def _onchange_car_id(self):
@@ -1278,7 +1277,7 @@ class CarBookingLine(models.Model):
         # ------------------------------------------------------------------
     #  Header / basic info
     # ------------------------------------------------------------------
-    flight_no = fields.Char(related='car_booking_id.flight_no', store=True, readonly=True)
+    flight_number = fields.Char(related='car_booking_id.flight_number', store=True, readonly=True)
     booking_state = fields.Selection(related='car_booking_id.state', store=True, readonly=True)
     booking_date = fields.Datetime(related='car_booking_id.booking_date', store=True, readonly=True)
     reservation_status = fields.Selection(related='car_booking_id.reservation_status', store=True, readonly=True)
@@ -1475,3 +1474,4 @@ All Partners Sample:
                 'sticky': False,
             }
         }
+

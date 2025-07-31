@@ -21,7 +21,7 @@
                 <field name="customer_name" optional="show"/>
                 <field name="guest_name" optional="show"/>
                 <field name="mobile" optional="show"/>
-                <field name="flight_no" optional="show"/>
+                <field name="flight_number" optional="show"/>
                 <field name="hotel_room_number" optional="show"/>
                 <field name="location_from" optional="show"/>
                 <field name="location_to" optional="show"/>
@@ -70,7 +70,7 @@
                     <field name="customer_name"/>
                     <field name="guest_name"/>
                     <field name="mobile"/>
-                    <field name="flight_no"/>
+                    <field name="flight_number"/>
                     <field name="hotel_room_number"/>
                     <field name="location_from"/>
                     <field name="location_to"/>
