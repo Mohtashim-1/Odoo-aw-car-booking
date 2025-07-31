@@ -25,8 +25,8 @@
     ],
     'assets': {
         'web.report_assets_common': [
-            'car_booking/static/src/css/car_booking_reports.css',
-            'car_booking/static/src/font/Droid Arabic Naskh Regular/Droid Arabic Naskh Regular.ttf',
+            'aw_car_booking/static/src/css/car_booking_reports.css',
+            'aw_car_booking/static/src/font/Droid Arabic Naskh Regular/Droid Arabic Naskh Regular.ttf',
         ],
     },
     'installable': True,

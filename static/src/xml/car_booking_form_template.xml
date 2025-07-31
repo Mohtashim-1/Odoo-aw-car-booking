@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="car_booking_template" name="Car Booking Template">
-        <t t-name="car_booking.Form" owl="1">
+        <t t-name="aw_car_booking.Form" owl="1">
             <div class="o_form_container p-4">
                 <h3>🧾 Car Booking Form</h3>
 
@@ -68,10 +68,11 @@
                                t-att-checked="state.extraServices.includes(service.id)"
                                t-on-change="() => onCheckboxChange(service.id)" />
                         <span t-esc="service.name"/>
-                    </t>
+                    </div>
+                </t>
 
                 <!-- Dates -->
-                <labelNStart Date</label>
+                <label>Start Date</label>
                 <input type="date" t-model="state.startDate" class="form-control mb-2"/>
                 <label>End Date</label>
                 <input type="date" t-model="state.endDate" class="form-control mb-2"/>
