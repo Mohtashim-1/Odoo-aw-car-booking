@@ -221,6 +221,8 @@ class CarBooking(models.Model):
             'context': {'default_car_booking_id': self.id},
         }
 
+
+
     def action_create_quotation(self):
         """Create a quotation (sale order) from car booking"""
         self.ensure_one()
@@ -234,7 +236,7 @@ class CarBooking(models.Model):
         order_lines = []
         
         for line in self.car_booking_lines:
-            # Calculate base amount
+            # Calculate base amount (qty * unit_price * duration)
             base_amount = (line.qty or 1) * (line.unit_price or 0) * (line.duration or 1)
             
             # Add extra hour charges if any
@@ -242,18 +244,15 @@ class CarBooking(models.Model):
             if line.extra_hour and line.extra_hour > 0 and line.extra_hour_charges:
                 extra_charges = line.extra_hour * line.extra_hour_charges
             
-            # Total amount including additional charges
-            total_amount = base_amount + extra_charges
-            
             # Create order line
             order_line_vals = {
                 'product_id': line.product_id.id if line.product_id else False,
                 'name': line.product_id.name if line.product_id else f"Car Booking Service - {line.type_of_service_id.name if line.type_of_service_id else 'Service'}",
-                'product_uom_qty': line.qty or 1,
-                'price_unit': line.unit_price or 0,
-                'price_subtotal': total_amount,  # Include additional charges in subtotal
+                'product_uom_qty': (line.qty or 1) * (line.duration or 1),  # Total quantity including duration
+                'price_unit': line.unit_price or 0,  # Unit price per day
+                'price_subtotal': base_amount,  # Base amount without additional charges
                 'price_tax': 0,  # Will be calculated automatically
-                'price_total': total_amount,  # Will be calculated automatically
+                'price_total': base_amount,  # Will be calculated automatically
                 
                 # Copy taxes from car booking line
                 'tax_id': [(6, 0, line.tax_ids.ids)] if line.tax_ids else False,
@@ -279,6 +278,16 @@ class CarBooking(models.Model):
             'date_order': fields.Datetime.now(),
             'validity_date': fields.Date.today() + timedelta(days=30),  # 30 days validity
         })
+
+        # Force recalculation of amounts after creation
+        sale_order._compute_amounts()
+        
+        # Force recalculation of line amounts
+        for line in sale_order.order_line:
+            line._compute_amount()
+        
+        # Recalculate order totals
+        sale_order._compute_amounts()
 
         # Update reservation status and link quotation
         self.reservation_status = 'invoice_released'
@@ -610,6 +619,8 @@ class CarBooking(models.Model):
                 'project_id':          booking.project_name.id,
                 # --- synced XML/basic fields ---
                 'region':              booking.region,
+                'city':                booking.city.id if booking.city else False,
+                'airport_id':          booking.airport_id.id if booking.airport_id else False,
                 'booking_type':        booking.booking_type,          # ('airport', 'hotel', …) selection
                 'flight_number':       booking.flight_number,
                 'location_from':       booking.location_from,

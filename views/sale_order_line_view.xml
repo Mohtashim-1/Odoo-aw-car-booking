@@ -15,6 +15,7 @@
                     <field name="duration" optional="show"/>
                     <field name="additional_charges" optional="show"/>
                 </xpath>
+
             </field>
         </record>
 
