@@ -104,7 +104,7 @@
                 <button name="action_view_quotation" type="object" string="Quotation"
         icon="fa-file-text-o" class="oe_stat_button"
         invisible="quotation_id == False"/>
-    <button name="action_view_trip_profile" type="object" class="oe_stat_button" icon="fa-plus" invisible="state != 'confirm'">
+    <button name="action_view_trip_profile" type="object" class="oe_stat_button" icon="fa-plus">
         Trip Profile
     </button>
 </div>
