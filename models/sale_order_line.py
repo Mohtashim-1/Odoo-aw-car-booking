@@ -127,13 +127,7 @@ class SaleOrderLine(models.Model):
             # For regular lines, call parent method as usual
             super()._onchange_product_id()
     
-    @api.onchange('product_uom_qty', 'price_unit')
-    def _onchange_product_uom_qty_price_unit(self):
-        """Override to include additional charges in calculation"""
-        # Call parent method first
-        super()._onchange_product_uom_qty_price_unit()
-        
-        # The @api.depends decorator on _compute_amount will handle additional charges automatically
+
     
     @api.depends('product_id', 'product_uom', 'product_uom_qty')
     def _compute_price_unit(self):
@@ -167,28 +161,49 @@ class SaleOrderLine(models.Model):
             else:
                 line._reset_price_unit()
     
-    @api.depends('product_uom_qty', 'price_unit', 'additional_charges', 'tax_id')
+    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'additional_charges')
     def _compute_amount(self):
         """Override to include additional charges in amount calculation"""
-        # First call parent method to set basic fields
-        super()._compute_amount()
-        
         for line in self:
-            # Calculate base subtotal
+            # Calculate base subtotal (price_unit * quantity)
             base_subtotal = line.product_uom_qty * line.price_unit
             
-            # Include additional charges in subtotal
+            # Add additional charges to the subtotal
             line.price_subtotal = base_subtotal + (line.additional_charges or 0.0)
             
-            # Recalculate tax based on new subtotal (including additional charges)
+            # Calculate tax based on the subtotal (including additional charges)
             if line.tax_id and line.price_subtotal:
-                taxes = line.tax_id.compute_all(line.price_subtotal, line.order_id.currency_id, 1, product=line.product_id, partner=line.order_id.partner_id)
+                taxes = line.tax_id.compute_all(
+                    line.price_subtotal, 
+                    line.order_id.currency_id, 
+                    1, 
+                    product=line.product_id, 
+                    partner=line.order_id.partner_id
+                )
                 line.price_tax = sum(t.get('amount', 0.0) for t in taxes.get('taxes', []))
             else:
                 line.price_tax = 0.0
             
             # Update total
             line.price_total = line.price_subtotal + line.price_tax
+    
+    def _prepare_base_line_for_taxes_computation(self, **kwargs):
+        """Override to ensure tax computation uses the correct price_subtotal"""
+        self.ensure_one()
+        
+        # Use the computed price_subtotal which includes additional charges
+        return self.env['account.tax']._prepare_base_line_for_taxes_computation(
+            self,
+            **{
+                'tax_ids': self.tax_id,
+                'quantity': self.product_uom_qty,
+                'partner_id': self.order_id.partner_id,
+                'currency_id': self.order_id.currency_id or self.order_id.company_id.currency_id,
+                'rate': self.order_id.currency_rate,
+                'price_unit': self.price_subtotal / self.product_uom_qty if self.product_uom_qty else self.price_unit,
+                **kwargs,
+            },
+        )
     
     def _prepare_invoice_line(self, **optional_values):
         """Override to include car booking fields when creating invoice lines"""
