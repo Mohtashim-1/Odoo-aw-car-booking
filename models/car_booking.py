@@ -355,13 +355,22 @@ class CarBooking(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code(seq_code) or '/'
         return super(CarBooking, self).create(vals)
     
-    @api.depends('car_booking_lines.amount')
+    @api.depends('car_booking_lines.amount', 'car_booking_lines.extra_hour', 'car_booking_lines.extra_hour_charges')
     def _compute_amounts(self):
         for booking in self:
             # Sum all line amounts
             total_lines = sum(line.amount for line in booking.car_booking_lines)
-            charges_total = sum(line.extra_hour_charges for line in booking.car_booking_lines if line.extra_hour_charges)
-            hour_total = sum(line.extra_hour for line in booking.car_booking_lines if line.extra_hour)
+            
+            # Only count extra_hour_charges for lines that have extra_hour > 0
+            charges_total = sum(
+                line.extra_hour_charges 
+                for line in booking.car_booking_lines 
+                if line.extra_hour and line.extra_hour > 0 and line.extra_hour_charges
+            )
+            
+            # Sum total extra hours
+            hour_total = sum(line.extra_hour for line in booking.car_booking_lines if line.extra_hour and line.extra_hour > 0)
+            
             booking.without_vat_price = total_lines
             booking.vat = total_lines * 0.15  # 15% VAT
             booking.amount_total = (total_lines * 1.15) + booking.mis_charges
