@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, AccessError, UserError
+from datetime import timedelta
 
 class CarBooking(models.Model):
     _name = 'car.booking'
@@ -178,6 +179,7 @@ class CarBooking(models.Model):
     service_start_date = fields.Datetime(string='Service Start Date')
     service_end_date = fields.Datetime(string='Service End Date')
     invoice_id = fields.Many2one('account.move', string='Invoice', readonly=True, copy=False)
+    quotation_id = fields.Many2one('sale.order', string='Quotation', readonly=True, copy=False)
 
 
     @api.onchange('guest_name')
@@ -208,7 +210,91 @@ class CarBooking(models.Model):
             'context': {'default_move_type': 'out_invoice'},
         }
 
+    def action_view_quotation(self):
+        self.ensure_one()
+        return {
+            'name': 'Car Booking Quotation',
+            'view_mode': 'form',
+            'res_model': 'sale.order',
+            'res_id': self.quotation_id.id,
+            'type': 'ir.actions.act_window',
+            'context': {'default_car_booking_id': self.id},
+        }
+
+    def action_create_quotation(self):
+        """Create a quotation (sale order) from car booking"""
+        self.ensure_one()
+
+        if not self.car_booking_lines:
+            raise UserError("No booking lines to create quotation.")
+        if not self.customer_name:
+            raise UserError("Customer is not set.")
+
+        # Create sale order lines from car booking lines
+        order_lines = []
+        
+        for line in self.car_booking_lines:
+            # Calculate base amount
+            base_amount = (line.qty or 1) * (line.unit_price or 0) * (line.duration or 1)
+            
+            # Add extra hour charges if any
+            extra_charges = 0.0
+            if line.extra_hour and line.extra_hour > 0 and line.extra_hour_charges:
+                extra_charges = line.extra_hour * line.extra_hour_charges
+            
+            # Total amount including additional charges
+            total_amount = base_amount + extra_charges
+            
+            # Create order line
+            order_line_vals = {
+                'product_id': line.product_id.id if line.product_id else False,
+                'name': line.product_id.name if line.product_id else f"Car Booking Service - {line.type_of_service_id.name if line.type_of_service_id else 'Service'}",
+                'product_uom_qty': line.qty or 1,
+                'price_unit': line.unit_price or 0,
+                'price_subtotal': total_amount,  # Include additional charges in subtotal
+                'price_tax': 0,  # Will be calculated automatically
+                'price_total': total_amount,  # Will be calculated automatically
+                
+                # Copy taxes from car booking line
+                'tax_id': [(6, 0, line.tax_ids.ids)] if line.tax_ids else False,
+                
+                # Car booking specific fields
+                'car_booking_line_id': line.id,
+                'service_type': line.type_of_service_id.id if line.type_of_service_id else False,
+                'car_type': line.car_model_id.id if line.car_model_id else False,
+                'date_start': line.start_date,
+                'date_end': line.end_date,
+                'duration': line.duration,
+                'additional_charges': extra_charges,  # Store extra charges separately
+            }
+            
+            order_lines.append((0, 0, order_line_vals))
+
+        # Create sale order (quotation)
+        sale_order = self.env['sale.order'].create({
+            'partner_id': self.customer_name.id,
+            'car_booking_id': self.id,
+            'order_line': order_lines,
+            'note': self.notes or '',
+            'date_order': fields.Datetime.now(),
+            'validity_date': fields.Date.today() + timedelta(days=30),  # 30 days validity
+        })
+
+        # Update reservation status and link quotation
+        self.reservation_status = 'invoice_released'
+        self.quotation_id = sale_order.id
+
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'res_id': sale_order.id,
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {'default_car_booking_id': self.id},
+        }
+
     def action_create_invoice(self):
+        """Create an invoice from car booking (legacy method)"""
         self.ensure_one()
 
         if not self.car_booking_lines:

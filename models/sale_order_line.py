@@ -74,6 +74,26 @@ class SaleOrderLine(models.Model):
             # Set product if available
             if booking_line.product_id:
                 self.product_id = booking_line.product_id.id
+            
+            # Recalculate price subtotal to include additional charges
+            self._compute_price_subtotal_with_additional_charges()
+    
+    @api.depends('product_uom_qty', 'price_unit', 'additional_charges')
+    def _compute_price_subtotal_with_additional_charges(self):
+        """Compute price subtotal including additional charges"""
+        for line in self:
+            base_subtotal = line.product_uom_qty * line.price_unit
+            line.price_subtotal = base_subtotal + (line.additional_charges or 0.0)
+    
+    @api.depends('product_uom_qty', 'price_unit', 'additional_charges')
+    def _compute_amount(self):
+        """Override to include additional charges in amount calculation"""
+        super()._compute_amount()
+        for line in self:
+            if line.additional_charges:
+                line.price_subtotal += line.additional_charges
+                line.price_tax = line.price_subtotal * (line.tax_id.amount / 100) if line.tax_id else 0
+                line.price_total = line.price_subtotal + line.price_tax
     
     def _prepare_invoice_line(self, **optional_values):
         """Override to include car booking fields when creating invoice lines"""

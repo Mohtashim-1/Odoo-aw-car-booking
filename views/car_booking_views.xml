@@ -49,7 +49,8 @@
             class="oe_highlight"
             invisible="state != 'draft'"/>
 
-     <button name="action_create_invoice" type="object" string="Create Qoutation" class="btn-primary" invisible="invoice_id != False"/>
+    <button name="action_create_quotation" type="object" string="Create Quotation" class="btn-primary" invisible="quotation_id != False"/>
+    <button name="action_view_quotation" type="object" string="View Quotation" class="btn-secondary" invisible="quotation_id == False"/>
 
     <!-- Show Cancel button only when state is not 'cancelled' -->
     <button name="action_cancel"
@@ -100,6 +101,9 @@
                 <button name="action_view_invoice" type="object" string="Invoice"
         icon="fa-usd" class="oe_stat_button"
         invisible="invoice_id == False"/>
+                <button name="action_view_quotation" type="object" string="Quotation"
+        icon="fa-file-text-o" class="oe_stat_button"
+        invisible="quotation_id == False"/>
     <button name="action_view_trip_profile" type="object" class="oe_stat_button" icon="fa-plus" invisible="state != 'confirm'">
         Trip Profile
     </button>
@@ -113,6 +117,7 @@
                             widget="selection"
                             />
                             <field name="invoice_id" invisible="1"/>
+                            <field name="quotation_id" invisible="1"/>
 
                                            
 
