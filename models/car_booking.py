@@ -140,28 +140,32 @@ class CarBooking(models.Model):
     def _compute_customer_domain_category(self):
         """Compute the category ID for customer domain filtering"""
         for record in self:
-            if record.business_type:
-                category_mapping = {
-                    'corporate': 'Companies',
-                    'hotels': 'Hotels', 
-                    'government': 'Government',
-                    'individuals': 'Individuals',
-                    'rental': 'Rental',
-                    'others': 'Others'
-                }
-                
-                category_name = category_mapping.get(record.business_type)
-                if category_name:
-                    category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
-                    if not category:
-                        category = self.env['res.partner.category'].create({
-                            'name': category_name,
-                            'color': 1
-                        })
-                    record.customer_domain_category_id = category.id
+            try:
+                if record.business_type:
+                    category_mapping = {
+                        'corporate': 'Companies',
+                        'hotels': 'Hotels', 
+                        'government': 'Government',
+                        'individuals': 'Individuals',
+                        'rental': 'Rental',
+                        'others': 'Others'
+                    }
+                    
+                    category_name = category_mapping.get(record.business_type)
+                    if category_name:
+                        category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+                        if not category:
+                            category = self.env['res.partner.category'].create({
+                                'name': category_name,
+                                'color': 1
+                            })
+                        record.customer_domain_category_id = category.id
+                    else:
+                        record.customer_domain_category_id = False
                 else:
                     record.customer_domain_category_id = False
-            else:
+            except Exception:
+                # Handle any errors gracefully during copy operations
                 record.customer_domain_category_id = False
 
     guest_name = fields.Many2one('res.partner', string='Guest Name')
@@ -1515,6 +1519,30 @@ class CarBookingLine(models.Model):
                 record.duration = max(delta.days, 0)
             else:
                 record.duration = 0.0
+    
+    def _generate_booking_line_name(self):
+        """Generate a proper name for car booking line"""
+        name_parts = []
+        
+        # Add car model
+        if self.car_model:
+            name_parts.append(self.car_model)
+        elif self.fleet_vehicle_id:
+            name_parts.append(self.fleet_vehicle_id.name)
+        else:
+            name_parts.append("Vehicle")
+        
+        # Add driver name
+        if self.driver_name:
+            name_parts.append(f"- {self.driver_name.name}")
+        else:
+            name_parts.append("- Driver")
+        
+        # Add dates if available
+        if self.start_date and self.end_date:
+            name_parts.append(f"({self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')})")
+        
+        return " ".join(name_parts)
 
     def action_test_filter_manually(self):
         """Test the filter manually to see what's happening"""
