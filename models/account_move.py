@@ -207,5 +207,106 @@ class AccountMoveLine(models.Model):
             
             # Set product if available
             if booking_line.product_id:
-                self.product_id = booking_line.product_id.id 
+                self.product_id = booking_line.product_id.id
+    
+    def action_fix_invoice_totals(self):
+        """Directly fix invoice totals by summing line amounts"""
+        for move in self:
+            if move.is_invoice(True):
+                total_untaxed = 0.0
+                
+                for line in move.line_ids:
+                    # Calculate line amount including additional charges
+                    line_amount = (line.quantity * line.price_unit) + (line.additional_charges or 0.0)
+                    total_untaxed += line_amount
+                    
+                    # Update line subtotal
+                    line.write({'price_subtotal': line_amount})
+                
+                # Update invoice totals
+                move.write({
+                    'amount_untaxed': total_untaxed,
+                    'amount_total': total_untaxed + move.amount_tax
+                })
+                
+                print(f"DEBUG: Fixed invoice {move.id} - untaxed_amount={total_untaxed}, total_amount={total_untaxed + move.amount_tax}")
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': f'Invoice totals fixed. Untaxed Amount: {total_untaxed}',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+    
+    def action_recalculate_totals(self):
+        """Recalculate invoice totals by summing the Amount column values"""
+        for move in self:
+            if move.is_invoice(True):
+                total_untaxed = 0.0
+                
+                # Sum the Amount column values directly
+                for line in move.line_ids:
+                    # Get the amount as displayed in the Amount column
+                    line_amount = line.price_subtotal
+                    total_untaxed += line_amount
+                    print(f"DEBUG: Line {line.name} - amount={line_amount}")
+                
+                print(f"DEBUG: Total calculated: {total_untaxed}")
+                
+                # Update invoice totals
+                move.write({
+                    'amount_untaxed': total_untaxed,
+                    'amount_total': total_untaxed + move.amount_tax
+                })
+                
+                print(f"DEBUG: Invoice updated - amount_untaxed={move.amount_untaxed}")
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+    
+    def action_force_update_line_subtotals(self):
+        """Force update all line subtotals to include additional charges"""
+        for move in self:
+            if move.is_invoice(True):
+                total_untaxed = 0.0
+                
+                for line in move.line_ids:
+                    # Calculate line amount including additional charges
+                    base_subtotal = line.quantity * line.price_unit
+                    additional_charges = line.additional_charges or 0.0
+                    new_subtotal = base_subtotal + additional_charges
+                    
+                    print(f"DEBUG: Line {line.name} - quantity={line.quantity}, price_unit={line.price_unit}, additional_charges={additional_charges}")
+                    print(f"DEBUG: Line calculation - base_subtotal={base_subtotal}, additional_charges={additional_charges}, new_subtotal={new_subtotal}")
+                    
+                    # Update line subtotal
+                    line.write({'price_subtotal': new_subtotal})
+                    total_untaxed += new_subtotal
+                
+                print(f"DEBUG: Total untaxed calculated: {total_untaxed}")
+                
+                # Update invoice totals
+                move.write({
+                    'amount_untaxed': total_untaxed,
+                    'amount_total': total_untaxed + move.amount_tax
+                })
+                
+                print(f"DEBUG: Invoice updated - amount_untaxed={move.amount_untaxed}")
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': f'Line subtotals updated to include additional charges. Total: {total_untaxed}',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
