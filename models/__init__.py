@@ -10,6 +10,7 @@ from . import type_of_service
 from . import trip_profile
 from . import res_partner
 from . import res_company
+from . import res_users
 
 # Conditional imports based on module availability
 try:

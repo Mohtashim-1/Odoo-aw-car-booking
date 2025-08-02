@@ -1,14 +1,16 @@
 {
     'name': 'Car Booking',
-    'version': '18.0',
+    'version': '18.2',
     'depends': ['base','fleet','project',
                  'contacts', 'account','stock','sale'],
     'data': [
-        'security/car_booking_groups.xml',
+        'security/security.xml',
         'security/ir.model.access.csv',
+        'views/menu.xml',
         'views/car_booking_views.xml',
         'views/res_company_view.xml',
         'views/res_partner_view.xml',
+        'views/res_users_view.xml',
         'views/sale_order_line_view.xml',
         'views/account_move_view.xml',
         'data/car_extra_service_data.xml',

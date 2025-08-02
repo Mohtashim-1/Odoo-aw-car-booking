@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Main Car Booking Menu -->
+        <menuitem id="menu_car_booking_root"
+                  name="Car Booking"
+                  web_icon="aw_car_booking,static/description/icon.png"
+                  sequence="10"
+                  groups="aw_car_booking.group_car_booking_user"/>
+        
+        <!-- Car Booking Submenu -->
+        <menuitem id="menu_car_booking"
+                  name="Car Bookings"
+                  parent="menu_car_booking_root"
+                  sequence="10"
+                  groups="aw_car_booking.group_car_booking_user"/>
+        
+        <!-- Car Booking Lines Submenu -->
+        <menuitem id="menu_car_booking_line"
+                  name="Booking Lines"
+                  parent="menu_car_booking_root"
+                  sequence="20"
+                  groups="aw_car_booking.group_car_booking_user"/>
+        
+        <!-- Configuration Menu (Manager Only) -->
+        <menuitem id="menu_car_booking_config"
+                  name="Configuration"
+                  parent="menu_car_booking_root"
+                  sequence="100"
+                  groups="aw_car_booking.group_car_booking_manager"/>
+        
+        <!-- Master Data Menus (Manager Only) -->
+        <menuitem id="menu_car_airport"
+                  name="Airports"
+                  parent="menu_car_booking_config"
+                  sequence="10"
+                  groups="aw_car_booking.group_car_booking_manager"/>
+        
+        <menuitem id="menu_booking_city"
+                  name="Cities"
+                  parent="menu_car_booking_config"
+                  sequence="20"
+                  groups="aw_car_booking.group_car_booking_manager"/>
+        
+        <menuitem id="menu_type_of_service"
+                  name="Service Types"
+                  parent="menu_car_booking_config"
+                  sequence="30"
+                  groups="aw_car_booking.group_car_booking_manager"/>
+        
+    </data>
+</odoo> 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Car Booking User Group -->
+        <record id="group_car_booking_user" model="res.groups">
+            <field name="name">Car Booking User</field>
+            <field name="comment">Users can create and manage car bookings but cannot delete them or manage master data.</field>
+        </record>
+        
+        <!-- Car Booking Manager Group -->
+        <record id="group_car_booking_manager" model="res.groups">
+            <field name="name">Car Booking Manager</field>
+            <field name="comment">Managers have full access to car booking module including master data management.</field>
+            <field name="implied_ids" eval="[(4, ref('group_car_booking_user'))]"/>
+        </record>
+        
+
+        
+    </data>
+</odoo> 

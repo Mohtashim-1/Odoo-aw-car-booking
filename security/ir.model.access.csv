@@ -1,14 +1,18 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_car_extra_service,Car Extra Service Access,model_car_extra_service,base.group_user,1,1,1,1
-access_booking_city,Car booking cites Access,model_booking_city,base.group_user,1,1,1,1
-access_car_booking_trip_line,Car booking trip line Access,model_car_booking_trip_line,base.group_user,1,1,1,1
-access_car_airport,Car booking Airport Access,model_car_airport,base.group_user,1,1,1,1
-access_car_booking_line,Car booking Line Access,model_car_booking_line,base.group_user,1,1,1,1
-access_car_booking,Car booking Access,model_car_booking,base.group_user,1,1,1,1
-access_car_year_model,Car year model,model_year_model,base.group_user,1,1,1,1
-access_business_point,Business Point,model_business_point,base.group_user,1,1,1,1
-access_year_car_brand_and_type,Year Car Brand and Type,model_year_car_brand_and_type,base.group_user,1,1,1,1
-access_type_of_service,name_type_of_service,model_type_of_service,base.group_user,1,1,1,1
+access_car_booking_user,car.booking.user,model_car_booking,aw_car_booking.group_car_booking_user,1,1,1,0
+access_car_booking_manager,car.booking.manager,model_car_booking,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_car_booking_line_user,car.booking.line.user,model_car_booking_line,aw_car_booking.group_car_booking_user,1,1,1,0
+access_car_booking_line_manager,car.booking.line.manager,model_car_booking_line,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_car_airport_user,car.airport.user,model_car_airport,aw_car_booking.group_car_booking_user,1,0,0,0
+access_car_airport_manager,car.airport.manager,model_car_airport,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_booking_city_user,booking.city.user,model_booking_city,aw_car_booking.group_car_booking_user,1,0,0,0
+access_booking_city_manager,booking.city.manager,model_booking_city,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_type_of_service_user,type.of.service.user,model_type_of_service,aw_car_booking.group_car_booking_user,1,0,0,0
+access_type_of_service_manager,type.of.service.manager,model_type_of_service,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_account_move_car_booking_user,account.move.car.booking.user,model_account_move,aw_car_booking.group_car_booking_user,1,1,1,0
+access_account_move_car_booking_manager,account.move.car.booking.manager,model_account_move,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_account_move_line_car_booking_user,account.move.line.car.booking.user,model_account_move_line,aw_car_booking.group_car_booking_user,1,1,1,0
+access_account_move_line_car_booking_manager,account.move.line.car.booking.manager,model_account_move_line,aw_car_booking.group_car_booking_manager,1,1,1,1
 
 
 
