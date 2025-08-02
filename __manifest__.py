@@ -1,6 +1,6 @@
 {
     'name': 'Car Booking',
-    'version': '18.2',
+    'version': '18.1',
     'depends': ['base','fleet','project',
                  'contacts', 'account','stock','sale'],
     'data': [
