@@ -1060,12 +1060,10 @@ Sample Partners:
     @api.onchange('business_type')
     def _onchange_business_type(self):
         """Filter customer_name based on business_type matching partner categories"""
-        print(f"DEBUG: _onchange_business_type called with business_type: {self.business_type}")
-        
         if self.business_type:
-            # Define the mapping between business_type and partner category names
+            # Map business_type to category name
             category_mapping = {
-                'corporate': 'Companies',
+                'corporate': 'Corporate',
                 'hotels': 'Hotels', 
                 'government': 'Government',
                 'individuals': 'Individuals',
@@ -1114,6 +1112,24 @@ Sample Partners:
                     'customer_name': False
                 }
             }
+
+    @api.onchange('guest_name')
+    def _onchange_guest_name(self):
+        """Auto-sync guest information from car booking to trip profile"""
+        if self.guest_name and self.trip_profile_id:
+            trip_profile = self.trip_profile_id
+            # Sync guest information to trip profile
+            if self.guest_name != trip_profile.guest_name:
+                trip_profile.guest_name = self.guest_name.id
+                trip_profile.guest_id = self.guest_name.id
+                print(f"DEBUG: Auto-synced guest_name from car booking to trip profile: {self.guest_name.name}")
+            
+            # Also sync to car booking lines
+            for booking_line in self.car_booking_lines:
+                if self.guest_name not in booking_line.guest_ids:
+                    guest_ids = booking_line.guest_ids.ids + [self.guest_name.id]
+                    booking_line.guest_ids = [(6, 0, guest_ids)]
+                    print(f"DEBUG: Auto-synced guest_name to booking line {booking_line.id}: {self.guest_name.name}")
 
     def action_ensure_service_types_before_trip(self):
         """Ensure car booking lines have service types set before creating trip profile"""
@@ -1562,6 +1578,17 @@ class CarBookingLine(models.Model):
         'res.partner', string="Guests Name",)
 
 
+    @api.onchange('guest_ids')
+    def _onchange_guest_ids(self):
+        """Auto-sync guest information from car booking line to trip profile"""
+        if self.guest_ids and self.car_booking_id and self.car_booking_id.trip_profile_id:
+            trip_profile = self.car_booking_id.trip_profile_id
+            # Set the first guest as the main guest in trip profile
+            if self.guest_ids and self.guest_ids[0] != trip_profile.guest_name:
+                trip_profile.guest_name = self.guest_ids[0].id
+                trip_profile.guest_id = self.guest_ids[0].id
+                print(f"DEBUG: Auto-synced guest_name from booking line to trip profile: {self.guest_ids[0].name}")
+
     @api.onchange('driver_name')
     def _onchange_res_partner_id(self):
         if self.driver_name:
@@ -1713,11 +1740,12 @@ class CarBookingLine(models.Model):
         """Compute duration for each line based on start_date and end_date."""
         for record in self:
             if record.start_date and record.end_date:
-                start_date = fields.Date.from_string(record.start_date)
-                end_date = fields.Date.from_string(record.end_date)
+                # Convert datetime to date for proper calculation
+                start_date = record.start_date.date()
+                end_date = record.end_date.date()
                 delta = end_date - start_date
-                # Ensure duration is non-negative
-                record.duration = max(delta.days, 0)
+                # Ensure duration is non-negative and add 1 for inclusive counting
+                record.duration = max(delta.days + 1, 1)
             else:
                 record.duration = 0.0
             print(f"DEBUG: Duration calculated: {record.duration} days")

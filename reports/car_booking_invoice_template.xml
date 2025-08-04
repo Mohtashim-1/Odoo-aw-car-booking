@@ -118,7 +118,7 @@
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].car_type.name"/></td>
                                                     <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].date_start.strftime('%m-%d-%Y') if line[1].date_start else ''"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].date_end.strftime('%m-%d-%Y') if line[1].date_end else ''"/></td>
-                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].duration"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="'%d' % int(round(line[1].duration)) if line[1].duration else '0'"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].quantity" t-options='{"widget": "float", "precision": 0}'/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].additional_charges" t-options='{"widget": "float", "precision": 0}'/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].price_unit" t-options='{"widget": "float", "precision": 0}'/></td>
