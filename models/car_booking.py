@@ -1186,7 +1186,7 @@ Sample Partners:
             'res_id': self.trip_profile_id.id,
             'target': 'current',
             'context': self.env.context,
-        }
+            }
 
     # Rest of the existing methods (unchanged)
     def duplicate_booking(self):

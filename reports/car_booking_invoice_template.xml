@@ -114,7 +114,7 @@
                                         <t t-foreach="enumerate(doc.invoice_line_ids, start=1)" t-as="line">
                                             <tr>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[0]"/></td>
-                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].service_type_id.name"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].service_type.name"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].car_type.name"/></td>
                                                     <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].date_start.strftime('%m-%d-%Y') if line[1].date_start else ''"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].date_end.strftime('%m-%d-%Y') if line[1].date_end else ''"/></td>
@@ -288,6 +288,23 @@
             <p style="margin: 0; font-size: 8px;">DS Rent-Tax Invoice</p>
         </div>
     </template>
+
+    <!-- Paper Format for Car Booking Invoice -->
+    <record id="paperformat_car_booking" model="report.paperformat">
+        <field name="name">Car Booking Invoice</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_width">0</field>
+        <field name="page_height">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
 
     <!-- Report Action for Car Booking Invoice -->
     <record id="action_report_car_booking_invoice" model="ir.actions.report">
