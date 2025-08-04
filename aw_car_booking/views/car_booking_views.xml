@@ -13,7 +13,7 @@
                 <field name="customer_name" optional="show"/>
                  <field name="guest_name" optional="show"/>
                 <field name="booking_type" optional="show"/>
-                <field name="branch_id" optional="show"/>
+                <!-- <field name="location_id" optional="show"/> -->
                 <field name="region" optional="show"/>
                  <field name="flight_number" optional="show"/>
                  <field name="mobile" optional="hide"/>
@@ -52,12 +52,12 @@
     <button name="action_create_quotation" type="object" string="Create Quotation" class="btn-primary" invisible="quotation_id != False"/>
     <button name="action_view_quotation" type="object" string="View Quotation" class="btn-secondary" invisible="quotation_id == False"/>
 
-    <!-- Show Cancel button only when state is not 'completed' and record is saved -->
+    <!-- Show Cancel button only when state is not 'cancelled' -->
     <button name="action_cancel"
             string="Cancel"
             type="object"
             class="oe_highlight"
-            invisible="state == 'completed' or not id"/>
+            invisible="state == 'cancelled'"/>
 
     <!-- Statusbar -->
     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,scheduled,departed,completed,invoiced,cancelled"/>
@@ -127,7 +127,7 @@
                         <group>
                             <field name="region" required="1" widget="selection"/>
                             <field name="city" required="1" options="{'no_create': True}" />
-                            <field name="branch_id" string="Branch" options="{'no_create': True}" readonly="1" />
+                            <!-- <field name="location_id" string="Branch" options="{'no_create': True}" /> -->
 
                             
                            
@@ -264,43 +264,10 @@
     </field>
 </record>
 
-    <record id="view_car_booking_search" model="ir.ui.view">
-        <field name="name">car.booking.search</field>
-        <field name="model">car.booking</field>
-        <field name="arch" type="xml">
-            <search string="Search Car Bookings">
-                <field name="name"/>
-                <field name="customer_name"/>
-                <field name="guest_name"/>
-                <field name="branch_id"/>
-                <field name="region"/>
-                <field name="city"/>
-                <field name="business_type"/>
-                <field name="booking_type"/>
-                <field name="reservation_status"/>
-                <field name="state"/>
-                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
-                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirm')]"/>
-                <filter string="Scheduled" name="scheduled" domain="[('state', '=', 'scheduled')]"/>
-                <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
-                <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Branch" name="group_branch" context="{'group_by': 'branch_id'}"/>
-                    <filter string="Region" name="group_region" context="{'group_by': 'region'}"/>
-                    <filter string="Business Type" name="group_business_type" context="{'group_by': 'business_type'}"/>
-                    <filter string="Booking Type" name="group_booking_type" context="{'group_by': 'booking_type'}"/>
-                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
-                    <filter string="Reservation Status" name="group_reservation_status" context="{'group_by': 'reservation_status'}"/>
-                </group>
-            </search>
-    </field>
-</record>
-
     <record id="action_car_booking" model="ir.actions.act_window">
         <field name="name">Car Bookings</field>
         <field name="res_model">car.booking</field>
         <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="view_car_booking_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create a new booking for car.

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Car Extra Service Tree View -->
+        <record id="view_car_extra_service_tree" model="ir.ui.view">
+            <field name="name">car.extra.service.tree</field>
+            <field name="model">car.extra.service</field>
+            <field name="arch" type="xml">
+                <tree string="Car Extra Services">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Car Extra Service Form View -->
+        <record id="view_car_extra_service_form" model="ir.ui.view">
+            <field name="name">car.extra.service.form</field>
+            <field name="model">car.extra.service</field>
+            <field name="arch" type="xml">
+                <form string="Car Extra Service">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Car Extra Service Action -->
+        <record id="action_car_extra_service" model="ir.actions.act_window">
+            <field name="name">Car Extra Services</field>
+            <field name="res_model">car.extra.service</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first car extra service!
+                </p>
+                <p>
+                    Define extra services that can be added to car bookings such as Child Chair, GPS Navigation, etc.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Car Extra Service Menu -->
+        <menuitem id="menu_car_extra_service"
+                  name="Extra Services"
+                  parent="menu_car_booking_config"
+                  action="action_car_extra_service"
+                  sequence="40"
+                  groups="aw_car_booking.group_car_booking_manager"/>
+        
+    </data>
+</odoo>

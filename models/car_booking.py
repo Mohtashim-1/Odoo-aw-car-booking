@@ -12,7 +12,24 @@ class CarBooking(models.Model):
     location_id = fields.Many2one(
         'stock.location',
         string='Branch',
-        domain=[('usage', '=', 'internal')]
+        domain=[('usage', '=', 'internal')],
+        default=lambda self: self._get_default_branch()
+    )
+    
+    # Use company branch as the main branch field
+    branch_id = fields.Many2one(
+        'res.company',
+        string='Branch',
+        domain="[]",
+        default=lambda self: self._get_default_company_branch()
+    )
+    
+    # Company field for multi-company support
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        required=True
     )
 
     attachment_ids = fields.Many2many(
@@ -40,6 +57,7 @@ class CarBooking(models.Model):
         ('scheduled', 'Scheduled'),
         ('departed', 'Departed'),
         ('completed', 'Completed'),
+        ('invoiced', 'Invoiced'),
         ('cancelled', 'Cancelled')
     ], string='Trip Status', default='draft', tracking=True)
 
@@ -242,6 +260,7 @@ class CarBooking(models.Model):
         for line in self.car_booking_lines:
             # Calculate base amount (qty * unit_price * duration)
             base_amount = (line.qty or 1) * (line.unit_price or 0) * (line.duration or 1)
+            line.amount = base_amount
             
             # Add extra hour charges if any
             extra_charges = 0.0
@@ -441,9 +460,43 @@ class CarBooking(models.Model):
 
     name = fields.Char(string='Booking Ref', readonly=True, copy=False, default='New')
 
+    def _get_default_branch(self):
+        """Get the default branch for the current user"""
+        try:
+            # Get the current user's default warehouse
+            warehouse = self.env.user._get_default_warehouse_id()
+            if warehouse and warehouse.lot_stock_id:
+                return warehouse.lot_stock_id.id
+            return False
+        except Exception:
+            return False
+
+    def _get_default_company_branch(self):
+        """Get the default company branch for the current user"""
+        try:
+            # Get the current user's company as the branch
+            current_company = self.env.company
+            return current_company.id
+        except Exception:
+            return False
+
     @api.model
     def create(self, vals):
+        # Set default branch if not provided
+        if not vals.get('location_id'):
+            default_branch = self._get_default_branch()
+            if default_branch:
+                vals['location_id'] = default_branch
+        
+        # Set default company branch if not provided
+        if not vals.get('branch_id'):
+            default_branch = self._get_default_company_branch()
+            if default_branch:
+                vals['branch_id'] = default_branch
+        
+        # Generate sequence number only when creating the record
         if vals.get('name', 'New') == 'New':
+            # Determine sequence code based on booking type
             if vals.get('booking_type') == 'with_driver':
                 seq_code = 'car.booking.with_driver'
             elif vals.get('booking_type') == 'rental':
@@ -451,7 +504,32 @@ class CarBooking(models.Model):
             else:
                 seq_code = 'car.booking'  # fallback if needed
 
-            vals['name'] = self.env['ir.sequence'].next_by_code(seq_code) or '/'
+            # Try to get existing sequence or create new one
+            sequence = self.env['ir.sequence'].next_by_code(seq_code)
+            if sequence:
+                vals['name'] = sequence
+            else:
+                # If sequence doesn't exist, try to find the highest existing number
+                existing_bookings = self.env['car.booking'].search([('name', '!=', 'New')])
+                if existing_bookings:
+                    # Extract numbers from existing booking names
+                    numbers = []
+                    for booking in existing_bookings:
+                        if booking.name and '/' in booking.name:
+                            try:
+                                num_part = booking.name.split('/')[-1]
+                                numbers.append(int(num_part))
+                            except (ValueError, IndexError):
+                                continue
+                    
+                    if numbers:
+                        next_number = max(numbers) + 1
+                        vals['name'] = f"DSL/{str(next_number).zfill(5)}"
+                    else:
+                        vals['name'] = "DSL/00001"
+                else:
+                    vals['name'] = "DSL/00001"
+        
         return super(CarBooking, self).create(vals)
     
     @api.depends('car_booking_lines.amount', 'car_booking_lines.extra_hour', 'car_booking_lines.extra_hour_charges')
@@ -605,108 +683,9 @@ class CarBooking(models.Model):
         """Create or update a trip.profile and its trip.vehicle.line lines
         so that it mirrors this booking."""
         for booking in self:
-            # -----------------------------------------------------------------
-            # 1. PREPARE PROFILE VALUES (FIELD‑BY‑FIELD COPY)
-            # -----------------------------------------------------------------
-            profile_vals = {
-                'name':                booking.name,                 # Booking Ref
-                'booking_id':          booking.id,                   # Link to car booking
-                'trip_type':           'individual',                 # default – adjust if you have logic
-                'service_type':        'with_driver' if booking.booking_type == 'with_driver' else 'without_driver',
-                'departure_datetime':  booking.service_start_date or booking.booking_date,
-                'expected_arrival_datetime': booking.service_end_date or booking.service_start_date,
-                # 'departure_point_id':  False,
-                # 'arrival_point_id':    False,
-                'driver_id':           booking.driver_name.id,
-                'customer_name':         booking.customer_name.id,
-                'guest_name':         booking.guest_name.id,
-                'project_id':          booking.project_name.id,
-                # --- synced XML/basic fields ---
-                'region':              booking.region,
-                'city':                booking.city.id if booking.city else False,
-                'airport_id':          booking.airport_id.id if booking.airport_id else False,
-                'booking_type':        booking.booking_type,          # ('airport', 'hotel', …) selection
-                'flight_number':       booking.flight_number,
-                'location_from':       booking.location_from,
-                'location_to':         booking.location_to,
-                'location_id':         booking.location_id.id if booking.location_id else False,
-                'guest_phone':         booking.guest_phone,
-                'invoice_id':          booking.invoice_id.id,
-                'customer_ref_number': booking.customer_ref_number,
-                'business_type':       booking.business_type,
-                'reservation_status':  booking.reservation_status,
-                'date_of_service':     booking.date_of_service,
-                'payment_type':        booking.payment_type,
-                'hotel_room_number':   booking.hotel_room_number,
-                'mobile':   booking.mobile,
-                'attachment_ids':      [(6, 0, booking.attachment_ids.ids)],
-            }
-
-            # -----------------------------------------------------------------
-            # 2. FIND OR CREATE TRIP PROFILE
-            # -----------------------------------------------------------------
-            if booking.trip_profile_id:
-                trip_profile = booking.trip_profile_id
-                trip_profile.write(profile_vals)
-            else:
-                trip_profile = self.env['trip.profile'].create(profile_vals)
-                booking.trip_profile_id = trip_profile.id
-
-            # -----------------------------------------------------------------
-            # 3. CLEAR OLD LINES & RE-CREATE FROM car.booking.line
-            # -----------------------------------------------------------------
-            trip_profile.vehicle_line_ids.unlink()
-
-            vehicle_lines = []
-            for line in booking.car_booking_lines:
-                vehicle_lines.append((0, 0, {
-                    'trip_id':            trip_profile.id,
-                    # ---- field‑for‑field copy ----
-                    'name':                 line.name,
-                    'vehicle_id':           line.fleet_vehicle_id.id,
-                    'driver_id':            line.driver_name.id,
-                    'car_model':            line.car_model,
-                    'car_model_id':         line.car_model_id.id,
-                    'car_year':             line.car_year,
-                    'product_id':           line.product_id.id,
-                    'product_category_id':  line.product_category_id.id,
-                    'qty':                  line.qty,
-                    'unit_price':           line.unit_price,
-                    'amount':               line.amount,
-                    'start_date':           line.start_date,
-                    'end_date':             line.end_date,
-                    'total_hours':          line.total_hours,
-                    'duration':             line.duration,
-                    'extra_hour':           line.extra_hour,
-                    'extra_hour_charges':   line.extra_hour_charges,
-                    'mobile_no':            line.mobile_no,
-                    'id_no':                line.id_no,
-                    'guest_ids': [(6, 0, line.guest_name.ids if line.guest_name else [])],
-                    'notes':                False,
-                }))
-            trip_profile.write({'vehicle_line_ids': vehicle_lines})
-
-            # -----------------------------------------------------------------
-            # 4. OPTIONAL: POST A MESSAGE / LOG
-            # -----------------------------------------------------------------
-            # booking.message_post(
-            #     body=_("Trip Profile <a href=# data-oe-model='trip.profile' data-oe-id='%d'>%s</a> created/updated.") %
-            #          (trip_profile.id, trip_profile.name)
-            # )
-
-        # ---------------------------------------------------------------------
-        # 5. RETURN ACTION TO OPEN THE PROFILE (single record only)
-        # ---------------------------------------------------------------------
-        # if len(self) == 1:
-        #     return {
-        #         'type': 'ir.actions.act_window',
-        #         'name': ('Trip Profile'),
-        #         'res_model': 'trip.profile',
-        #         'res_id': self.trip_profile_id.id,
-        #         'view_mode': 'form',
-        #         'target': 'current',
-        #     }
-        return True
+            # Use the new method that ensures proper saving
+            trip_profile = self.env['trip.profile'].create_from_booking_with_save(booking)
+            return trip_profile
     
     
 
@@ -1136,6 +1115,79 @@ Sample Partners:
                 }
             }
 
+    def action_ensure_service_types_before_trip(self):
+        """Ensure car booking lines have service types set before creating trip profile"""
+        self.ensure_one()
+        
+        print(f"DEBUG: Ensuring service types for booking: {self.name}")
+        updated_count = 0
+        
+        for booking_line in self.car_booking_lines:
+            if not booking_line.type_of_service_id:
+                print(f"DEBUG: Booking line {booking_line.id} missing type_of_service_id")
+                
+                # Try to find appropriate service type based on booking context
+                service_type = None
+                
+                # First try to find by booking type
+                if self.booking_type == 'with_driver':
+                    service_type = self.env['type.of.service'].search([
+                        '|', ('name', 'ilike', 'transfer'),
+                        ('name', 'ilike', 'with driver')
+                    ], limit=1)
+                elif self.booking_type == 'rental':
+                    service_type = self.env['type.of.service'].search([
+                        '|', ('name', 'ilike', 'rental'),
+                        ('name', 'ilike', 'without driver')
+                    ], limit=1)
+                
+                # If not found by booking type, try to find by product
+                if not service_type and booking_line.product_id:
+                    service_type = self.env['type.of.service'].search([
+                        ('name', 'ilike', booking_line.product_id.name)
+                    ], limit=1)
+                
+                # If still not found, get the first available service type
+                if not service_type:
+                    service_type = self.env['type.of.service'].search([], limit=1)
+                
+                if service_type:
+                    booking_line.type_of_service_id = service_type.id
+                    updated_count += 1
+                    print(f"DEBUG: Set service type for booking line {booking_line.id}: {service_type.name}")
+                else:
+                    print(f"DEBUG: No service type found for booking line {booking_line.id}")
+        
+        if updated_count > 0:
+            # Force save the booking lines
+            self.car_booking_lines._compute_amount_values()
+            print(f"DEBUG: Updated {updated_count} booking lines with service types")
+        
+        return updated_count
+
+    def action_create_trip_with_service_check(self):
+        """Create trip profile with service type verification"""
+        self.ensure_one()
+        
+        # First ensure service types are set in booking lines
+        updated_count = self.action_ensure_service_types_before_trip()
+        
+        # Now create the trip profile
+        trip_profile = self._create_trip_profile()
+        
+        message = f"Trip profile created successfully."
+        if updated_count > 0:
+            message += f" Updated {updated_count} booking lines with service types."
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'trip.profile',
+            'view_mode': 'form',
+            'res_id': self.trip_profile_id.id,
+            'target': 'current',
+            'context': self.env.context,
+        }
+
     # Rest of the existing methods (unchanged)
     def duplicate_booking(self):
         self.ensure_one()
@@ -1189,6 +1241,42 @@ Sample Partners:
     def action_confirm(self):
         for record in self:
             if record.state == 'draft':
+                # Generate sequence number if not already set
+                if not record.name or record.name == 'New':
+                    # Determine sequence code based on booking type
+                    if record.booking_type == 'with_driver':
+                        seq_code = 'car.booking.with_driver'
+                    elif record.booking_type == 'rental':
+                        seq_code = 'car.booking.rental'
+                    else:
+                        seq_code = 'car.booking'
+                    
+                    # Try to get existing sequence or create new one
+                    sequence = self.env['ir.sequence'].next_by_code(seq_code)
+                    if sequence:
+                        record.name = sequence
+                    else:
+                        # If sequence doesn't exist, try to find the highest existing number
+                        existing_bookings = self.env['car.booking'].search([('name', '!=', 'New')])
+                        if existing_bookings:
+                            # Extract numbers from existing booking names
+                            numbers = []
+                            for booking in existing_bookings:
+                                if booking.name and '/' in booking.name:
+                                    try:
+                                        num_part = booking.name.split('/')[-1]
+                                        numbers.append(int(num_part))
+                                    except (ValueError, IndexError):
+                                        continue
+                            
+                            if numbers:
+                                next_number = max(numbers) + 1
+                                record.name = f"DSL/{str(next_number).zfill(5)}"
+                            else:
+                                record.name = "DSL/00001"
+                        else:
+                            record.name = "DSL/00001"
+                
                 record.state = 'confirm'
                 self._create_trip_profile()
             else:
@@ -1224,6 +1312,18 @@ Sample Partners:
             self.driver_name = False
             self.mobile_no = False
             self.id_no = False
+        
+        # Set default branch if not already set
+        if not self.location_id:
+            default_branch = self._get_default_branch()
+            if default_branch:
+                self.location_id = default_branch
+        
+        # Set default company branch if not already set
+        if not self.branch_id:
+            default_branch = self._get_default_company_branch()
+            if default_branch:
+                self.branch_id = default_branch
 
     @api.onchange('customer_type')
     def _onchange_customer_type(self):
@@ -1232,6 +1332,22 @@ Sample Partners:
             self.car_no = False
             self.amount = 0.0
             self.attached = False
+    
+    @api.onchange('location_id')
+    def _onchange_location_id(self):
+        """Set default branch when form is loaded"""
+        if not self.location_id:
+            default_branch = self._get_default_branch()
+            if default_branch:
+                self.location_id = default_branch
+    
+    @api.onchange('branch_id')
+    def _onchange_branch_id(self):
+        """Set default company branch when form is loaded"""
+        if not self.branch_id:
+            default_branch = self._get_default_company_branch()
+            if default_branch:
+                self.branch_id = default_branch
 
 class CarBookingTripLine(models.Model):
     _name = 'car.booking.trip.line'
@@ -1364,9 +1480,19 @@ class CarBookingLine(models.Model):
         string='Extra Hour Charges',
         help="Extra Hour Charges"
     )
+    
+    extra_hour_total_amount = fields.Float(
+        string='Extra Hour Total Amount',
+        compute='_compute_extra_hour_total',
+        store=True,
+        help="Total extra hour charges (Extra Hour × Extra Hour Charges)"
+    )
+    
     amount = fields.Float(
         string='Amount',
-        help="Total amount (Qty × Unit Price)."
+        compute='_compute_amount',
+        store=True,
+        help="Total amount (Qty × Unit Price × Duration + Extra Charges)."
     )
 
     driver_name = fields.Many2one(
@@ -1391,6 +1517,25 @@ class CarBookingLine(models.Model):
     booking_state = fields.Selection(related='car_booking_id.state', store=True, readonly=True)
     booking_date = fields.Datetime(related='car_booking_id.booking_date', store=True, readonly=True)
     reservation_status = fields.Selection(related='car_booking_id.reservation_status', store=True, readonly=True)
+    booking_type = fields.Selection(related='car_booking_id.booking_type', store=True, readonly=True)
+    
+    # Custom display field for booking type
+    booking_type_display = fields.Char(
+        string='Booking Type',
+        compute='_compute_booking_type_display',
+        store=True,
+        help="Custom display for booking type"
+    )
+    
+    @api.depends('booking_type')
+    def _compute_booking_type_display(self):
+        for record in self:
+            if record.booking_type == 'with_driver':
+                record.booking_type_display = 'Car with Driver'
+            elif record.booking_type == 'rental':
+                record.booking_type_display = 'Rental'
+            else:
+                record.booking_type_display = record.booking_type or ''
 
     # ------------------------------------------------------------------
     #  Customer & contact
@@ -1408,7 +1553,7 @@ class CarBookingLine(models.Model):
     # ------------------------------------------------------------------
     #  Locations
     # ------------------------------------------------------------------
-    branch_id = fields.Many2one(related='car_booking_id.location_id', store=True, readonly=True)
+    branch_id = fields.Many2one(related='car_booking_id.branch_id', store=True, readonly=True)
     location_from = fields.Char(related='car_booking_id.location_from', store=True, readonly=True)
     location_to = fields.Char(related='car_booking_id.location_to', store=True, readonly=True)
     airport_id = fields.Many2one(related='car_booking_id.airport_id', store=True, readonly=True)
@@ -1485,22 +1630,78 @@ class CarBookingLine(models.Model):
     #             amount_val = record.qty * record.unit_price * record.duration
     #             record.amount = (record.extra_hour_charges * record.extra_hour ) + amount_val
 
-    @api.onchange('qty', 'unit_price', 'duration', 'extra_hour_charges', 'extra_hour')
-    def _onchange_amount(self):
-        for record in self:
-            record._compute_amount_values()
-
-    def _compute_amount_values(self):
+    @api.depends('qty', 'unit_price', 'duration', 'extra_hour', 'extra_hour_charges')
+    def _compute_amount(self):
+        """Compute amount based on qty * unit_price * duration + extra charges"""
         for record in self:
             qty = record.qty or 1
-            unit_price = record.unit_price or 1
+            unit_price = record.unit_price or 0
             duration = record.duration or 1
             extra_hour = record.extra_hour or 0
             extra_hour_charges = record.extra_hour_charges or 0
 
-            base_amount = qty * unit_price
+            # Calculate base amount: qty * unit_price * duration
+            base_amount = qty * unit_price * duration
             extra_amount = extra_hour * extra_hour_charges if extra_hour else 0
             record.amount = base_amount + extra_amount
+            
+            print(f"DEBUG: Line calculation - qty: {qty}, unit_price: {unit_price}, duration: {duration}")
+            print(f"DEBUG: extra_hour: {extra_hour}, extra_hour_charges: {extra_hour_charges}")
+            print(f"DEBUG: base_amount: {base_amount}, extra_amount: {extra_amount}, total: {record.amount}")
+            print(f"DEBUG: Formula: ({qty} × {unit_price} × {duration}) + ({extra_hour} × {extra_hour_charges}) = {record.amount}")
+
+    @api.depends('extra_hour', 'extra_hour_charges')
+    def _compute_extra_hour_total(self):
+        """Compute total extra hour charges"""
+        for record in self:
+            extra_hour = record.extra_hour or 0
+            extra_hour_charges = record.extra_hour_charges or 0
+            record.extra_hour_total_amount = extra_hour * extra_hour_charges
+            print(f"DEBUG: Extra hour total: {extra_hour} × {extra_hour_charges} = {record.extra_hour_total_amount}")
+
+    @api.onchange('qty', 'unit_price', 'duration', 'extra_hour_charges', 'extra_hour')
+    def _onchange_amount(self):
+        """Recalculate amount when key fields change"""
+        for record in self:
+            record._compute_amount()
+
+    @api.onchange('product_id', 'car_booking_id')
+    def _onchange_auto_set_service_type(self):
+        """Auto-set service type based on product or booking type"""
+        if self.product_id and not self.type_of_service_id:
+            # Try to find service type by product name
+            service_type = self.env['type.of.service'].search([
+                ('name', 'ilike', self.product_id.name)
+            ], limit=1)
+            
+            if service_type:
+                self.type_of_service_id = service_type.id
+                print(f"DEBUG: Auto-set service type from product: {service_type.name}")
+        
+        # If still no service type and we have a booking reference
+        if not self.type_of_service_id and self.car_booking_id:
+            booking = self.car_booking_id
+            service_type = None
+            
+            # Try to find by booking type
+            if booking.booking_type == 'with_driver':
+                service_type = self.env['type.of.service'].search([
+                    '|', ('name', 'ilike', 'transfer'),
+                    ('name', 'ilike', 'with driver')
+                ], limit=1)
+            elif booking.booking_type == 'rental':
+                service_type = self.env['type.of.service'].search([
+                    '|', ('name', 'ilike', 'rental'),
+                    ('name', 'ilike', 'without driver')
+                ], limit=1)
+            
+            # If still not found, get the first available service type
+            if not service_type:
+                service_type = self.env['type.of.service'].search([], limit=1)
+            
+            if service_type:
+                self.type_of_service_id = service_type.id
+                print(f"DEBUG: Auto-set service type from booking type: {service_type.name}")
 
     @api.onchange('car_booking_id')
     def _onchange_car_booking_id_date_of_service(self):
@@ -1519,6 +1720,7 @@ class CarBookingLine(models.Model):
                 record.duration = max(delta.days, 0)
             else:
                 record.duration = 0.0
+            print(f"DEBUG: Duration calculated: {record.duration} days")
     
     def _generate_booking_line_name(self):
         """Generate a proper name for car booking line"""

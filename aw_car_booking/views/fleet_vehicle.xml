@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fleet_vehicle_form_view_inherit_car_booking" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.inherit.car.booking</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='next_assignation_date']" position="after">
+                <field name="rental_price"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -102,7 +102,7 @@
                                             <tr>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[0]"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].product_id.name"/></td>
-                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].service_type.name"/></td>
+                                                <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].service_type.name if line[1].service_type else ''"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].duration"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><t t-esc="line[1].car_type.name"/></td>
                                                 <td style="border: 1px solid black; padding: 4px; text-align: center;"><span t-field="line[1].product_uom_qty" t-options='{"widget": "float", "precision": 0}'/></td>

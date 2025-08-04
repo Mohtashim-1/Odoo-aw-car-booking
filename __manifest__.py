@@ -19,6 +19,7 @@
         'views/fleet_vehicle.xml',
         'views/car_airport.xml',
         'views/car_booking_line_view.xml',
+        'data/sequence_data.xml',
         'data/paper_format.xml',
         'reports/custom_quotation_template.xml',
         'reports/car_booking_quotation_template.xml',

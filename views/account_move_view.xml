@@ -12,7 +12,7 @@
                 <!-- Add car booking fields to invoice lines -->
                 <xpath expr="//field[@name='invoice_line_ids']//list//field[@name='name']" position="after">
                     <field name="car_booking_line_id"/>
-                    <field name="service_type"/>
+                    <field name="service_type_id"/>
                     <field name="car_type"/>
                     <field name="date_start"/>
                     <field name="date_end"/>
@@ -30,7 +30,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='name']" position="after">
                     <field name="car_booking_line_id" optional="show"/>
-                    <field name="service_type" optional="show"/>
+                    <field name="service_type_id" optional="show"/>
                     <field name="car_type" optional="show"/>
                     <field name="date_start" optional="show"/>
                     <field name="date_end" optional="show"/>
@@ -48,7 +48,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='name']" position="after">
                     <field name="car_booking_line_id"/>
-                    <field name="service_type"/>
+                    <field name="service_type_id"/>
                     <field name="car_type"/>
                     <field name="date_start"/>
                     <field name="date_end"/>

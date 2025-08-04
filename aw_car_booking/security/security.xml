@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Car Booking User Group -->
+        <record id="group_car_booking_user" model="res.groups">
+            <field name="name">Car Booking User</field>
+            <field name="comment">Users can create and manage car bookings but cannot delete them or manage master data.</field>
+        </record>
+        
+        <!-- Car Booking Manager Group -->
+        <record id="group_car_booking_manager" model="res.groups">
+            <field name="name">Car Booking Manager</field>
+            <field name="comment">Managers have full access to car booking module including master data management.</field>
+            <field name="implied_ids" eval="[(4, ref('group_car_booking_user'))]"/>
+        </record>
+        
+        <!-- Public Access Rights for Car Extra Service (for report generation) -->
+        <record id="access_car_extra_service_public" model="ir.model.access">
+            <field name="name">car.extra.service.public</field>
+            <field name="model_id" ref="model_car_extra_service"/>
+            <field name="group_id" eval="False"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Car Extra Service for Base Users -->
+        <record id="access_car_extra_service_base_user" model="ir.model.access">
+            <field name="name">car.extra.service.base.user</field>
+            <field name="model_id" ref="model_car_extra_service"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Car Extra Service -->
+        <record id="access_car_extra_service_user" model="ir.model.access">
+            <field name="name">car.extra.service.user</field>
+            <field name="model_id" ref="model_car_extra_service"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <record id="access_car_extra_service_manager" model="ir.model.access">
+            <field name="name">car.extra.service.manager</field>
+            <field name="model_id" ref="model_car_extra_service"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Type of Service -->
+        <record id="access_type_of_service_user" model="ir.model.access">
+            <field name="name">type.of.service.user</field>
+            <field name="model_id" ref="model_type_of_service"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_type_of_service_manager" model="ir.model.access">
+            <field name="name">type.of.service.manager</field>
+            <field name="model_id" ref="model_type_of_service"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Year Car Brand and Type -->
+        <record id="access_year_car_brand_and_type_user" model="ir.model.access">
+            <field name="name">year.car.brand.and.type.user</field>
+            <field name="model_id" ref="model_year_car_brand_and_type"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_year_car_brand_and_type_manager" model="ir.model.access">
+            <field name="name">year.car.brand.and.type.manager</field>
+            <field name="model_id" ref="model_year_car_brand_and_type"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Year Model -->
+        <record id="access_year_model_user" model="ir.model.access">
+            <field name="name">year.model.user</field>
+            <field name="model_id" ref="model_year_model"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_year_model_manager" model="ir.model.access">
+            <field name="name">year.model.manager</field>
+            <field name="model_id" ref="model_year_model"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Business Point -->
+        <record id="access_business_point_user" model="ir.model.access">
+            <field name="name">business.point.user</field>
+            <field name="model_id" ref="model_business_point"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_business_point_manager" model="ir.model.access">
+            <field name="name">business.point.manager</field>
+            <field name="model_id" ref="model_business_point"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Car Booking -->
+        <record id="access_car_booking_user" model="ir.model.access">
+            <field name="name">car.booking.user</field>
+            <field name="model_id" ref="model_car_booking"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_car_booking_manager" model="ir.model.access">
+            <field name="name">car.booking.manager</field>
+            <field name="model_id" ref="model_car_booking"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Car Booking Line -->
+        <record id="access_car_booking_line_user" model="ir.model.access">
+            <field name="name">car.booking.line.user</field>
+            <field name="model_id" ref="model_car_booking_line"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_car_booking_line_manager" model="ir.model.access">
+            <field name="name">car.booking.line.manager</field>
+            <field name="model_id" ref="model_car_booking_line"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Car Booking Trip Line -->
+        <record id="access_car_booking_trip_line_user" model="ir.model.access">
+            <field name="name">car.booking.trip.line.user</field>
+            <field name="model_id" ref="model_car_booking_trip_line"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_car_booking_trip_line_manager" model="ir.model.access">
+            <field name="name">car.booking.trip.line.manager</field>
+            <field name="model_id" ref="model_car_booking_trip_line"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Booking City -->
+        <record id="access_booking_city_user" model="ir.model.access">
+            <field name="name">booking.city.user</field>
+            <field name="model_id" ref="model_booking_city"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_booking_city_manager" model="ir.model.access">
+            <field name="name">booking.city.manager</field>
+            <field name="model_id" ref="model_booking_city"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+        <!-- Access Rights for Car Airport -->
+        <record id="access_car_airport_user" model="ir.model.access">
+            <field name="name">car.airport.user</field>
+            <field name="model_id" ref="model_car_airport"/>
+            <field name="group_id" ref="group_car_booking_user"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <record id="access_car_airport_manager" model="ir.model.access">
+            <field name="name">car.airport.manager</field>
+            <field name="model_id" ref="model_car_airport"/>
+            <field name="group_id" ref="group_car_booking_manager"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+    </data>
+</odoo> 

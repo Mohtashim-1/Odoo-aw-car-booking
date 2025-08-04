@@ -15,6 +15,7 @@ from . import res_users
 # Conditional imports based on module availability
 try:
     from . import account_move
+    from . import account_move_line
 except ImportError:
     pass
 

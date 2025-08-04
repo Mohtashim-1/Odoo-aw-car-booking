@@ -13,6 +13,8 @@ access_account_move_car_booking_user,account.move.car.booking.user,model_account
 access_account_move_car_booking_manager,account.move.car.booking.manager,model_account_move,aw_car_booking.group_car_booking_manager,1,1,1,1
 access_account_move_line_car_booking_user,account.move.line.car.booking.user,model_account_move_line,aw_car_booking.group_car_booking_user,1,1,1,0
 access_account_move_line_car_booking_manager,account.move.line.car.booking.manager,model_account_move_line,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_car_booking_trip_line_user,car.booking.trip.line.user,model_car_booking_trip_line,aw_car_booking.group_car_booking_user,1,1,1,0
+access_car_booking_trip_line_manager,car.booking.trip.line.manager,model_car_booking_trip_line,aw_car_booking.group_car_booking_manager,1,1,1,1
 
 
 

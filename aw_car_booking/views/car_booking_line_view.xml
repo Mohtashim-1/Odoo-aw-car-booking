@@ -13,7 +13,6 @@
                 <field name="branch_id" optional="show"/>
                 <field name="city" optional="show"/>
                 <field name="car_booking_id" optional="show" widget="many2one"/>
-                <field name="booking_type_display" optional="show"/>
                 <field name="type_of_service_id" optional="show"/>
                 <field name="car_model_id" optional="show"/>
                 <field name="car_year" optional="show"/>
@@ -22,7 +21,7 @@
                 <field name="customer_name" optional="show"/>
                 <field name="guest_name" optional="show"/>
                 <field name="mobile" optional="show"/>
-                <field name="flight_number" optional="show"/>
+                <field name="flight_no" optional="show"/>
                 <field name="hotel_room_number" optional="show"/>
                 <field name="location_from" optional="show"/>
                 <field name="location_to" optional="show"/>
@@ -35,7 +34,6 @@
                 <field name="qty" optional="show"/>
                 <field name="reservation_status" optional="show"/>
                 <field name="booking_state" string="Status" optional="show"/>
-                <field name="create_uid" optional="show"/>
                 <field name="guest_ids"  widget="many2many_tags"  optional="hide"/>
             </list>
         </field>
@@ -53,10 +51,8 @@
                 <field name="branch_id"/>
                 <field name="city"/>
                 <field name="business_type"/>
-                <field name="booking_type"/>
                 <field name="booking_state"/>
                 <field name="reservation_status"/>
-                <field name="create_uid"/>
                 <filter string="Draft" name="draft" domain="[('booking_state', '=', 'draft')]"/>
                 <filter string="Confirmed" name="confirmed" domain="[('booking_state', '=', 'confirm')]"/>
                 <filter string="Completed" name="completed" domain="[('booking_state', '=', 'completed')]"/>
@@ -64,10 +60,8 @@
                     <filter string="Branch" name="group_branch" context="{'group_by': 'branch_id'}"/>
                     <filter string="City" name="group_city" context="{'group_by': 'city'}"/>
                     <filter string="Business Type" name="group_business_type" context="{'group_by': 'business_type'}"/>
-                    <filter string="Booking Type" name="group_booking_type" context="{'group_by': 'booking_type'}"/>
                     <filter string="Status" name="group_booking_state" context="{'group_by': 'booking_state'}"/>
                     <filter string="Reservation Status" name="group_reservation_status" context="{'group_by': 'reservation_status'}"/>
-                    <filter string="Created By" name="group_create_uid" context="{'group_by': 'create_uid'}"/>
                 </group>
             </search>
         </field>
@@ -83,7 +77,6 @@
                     <field name="branch_id"/>
                     <field name="city"/>
                     <field name="car_booking_id"/>
-                    <field name="booking_type"/>
                     <field name="type_of_service_id"/>
                     <field name="car_model_id"/>
                     <field name="car_year"/>
@@ -92,7 +85,7 @@
                     <field name="customer_name"/>
                     <field name="guest_name"/>
                     <field name="mobile"/>
-                    <field name="flight_number"/>
+                    <field name="flight_no"/>
                     <field name="hotel_room_number"/>
                     <field name="location_from"/>
                     <field name="location_to"/>
@@ -105,7 +98,6 @@
                     <field name="qty"/>
                     <field name="reservation_status"/>
                     <field name="booking_state" string="Status"/>
-                    <field name="create_uid"/>
                 </group>
             </sheet>
         </form>

@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_car_extra_service_public,car.extra.service.public,model_car_extra_service,,1,1,1,1
+access_car_extra_service_base_user,car.extra.service.base.user,model_car_extra_service,base.group_user,1,1,1,1
+access_car_extra_service_account_user,car.extra.service.account.user,model_car_extra_service,account.group_account_user,1,1,1,1
+access_car_extra_service_user,car.extra.service.user,model_car_extra_service,aw_car_booking.group_car_booking_user,1,1,1,1
+access_car_extra_service_manager,car.extra.service.manager,model_car_extra_service,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_account_move_car_booking_user,account.move.car.booking.user,model_account_move,aw_car_booking.group_car_booking_user,1,1,1,0
+access_account_move_car_booking_manager,account.move.car.booking.manager,model_account_move,aw_car_booking.group_car_booking_manager,1,1,1,1
+access_account_move_line_car_booking_user,account.move.line.car.booking.user,model_account_move_line,aw_car_booking.group_car_booking_user,1,1,1,0
+access_account_move_line_car_booking_manager,account.move.line.car.booking.manager,model_account_move_line,aw_car_booking.group_car_booking_manager,1,1,1,1

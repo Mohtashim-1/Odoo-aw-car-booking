@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Sample Car Extra Services -->
+        <record id="car_extra_service_child_chair" model="car.extra.service">
+            <field name="name">Child Chair</field>
+        </record>
+        
+        <record id="car_extra_service_gps" model="car.extra.service">
+            <field name="name">GPS Navigation</field>
+        </record>
+        
+        <record id="car_extra_service_insurance" model="car.extra.service">
+            <field name="name">Additional Insurance</field>
+        </record>
+        
+        <record id="car_extra_service_driver" model="car.extra.service">
+            <field name="name">Professional Driver</field>
+        </record>
+        
+        <record id="car_extra_service_wifi" model="car.extra.service">
+            <field name="name">WiFi Hotspot</field>
+        </record>
+        
+    </data>
+</odoo>
