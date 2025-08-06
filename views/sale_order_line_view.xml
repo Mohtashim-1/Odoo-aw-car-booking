@@ -7,15 +7,33 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='order_line']//list//field[@name='product_uom_qty']" position="after">
+                <!-- Hide packaging fields -->
+                <xpath expr="//field[@name='order_line']//list//field[@name='product_packaging_id']" position="replace">
+                    <field name="product_packaging_id" invisible="1" column_invisible="True"/>
+                </xpath>
+                <xpath expr="//field[@name='order_line']//list//field[@name='product_packaging_qty']" position="replace">
+                    <field name="product_packaging_qty" invisible="1" column_invisible="True"/>
+                </xpath>
+                
+                <!-- Show car booking fields after product_id -->
+                <xpath expr="//field[@name='order_line']//list//field[@name='product_id']" position="after">
                     <field name="service_type" optional="show"/>
                     <field name="car_type" optional="show"/>
-                    <field name="date_start" optional="show"/>
-                    <field name="date_end" optional="show"/>
-                    <field name="duration" optional="show"/>
-                    <field name="additional_charges" optional="show"/>
                 </xpath>
-
+                <!-- Show duration before quantity -->
+                <xpath expr="//field[@name='order_line']//list//field[@name='product_uom_qty']" position="before">
+                    <field name="duration" optional="show"/>
+                </xpath>
+                <!-- Show additional charges after unit price -->
+                <xpath expr="//field[@name='order_line']//list//field[@name='price_unit']" position="after">
+                    <field name="additional_charges" optional="show"/>
+                    <field name="discount" optional="show"/>
+                </xpath>
+                <!-- Hide date fields -->
+                <xpath expr="//field[@name='order_line']//list//field[@name='price_unit']" position="after">
+                    <field name="date_start" invisible="1" column_invisible="True"/>
+                    <field name="date_end" invisible="1" column_invisible="True"/>
+                </xpath>
             </field>
         </record>
 
@@ -25,13 +43,23 @@
             <field name="model">sale.order.line</field>
             <field name="inherit_id" ref="sale.view_order_line_tree"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_uom_qty']" position="after">
+                <!-- Show car booking fields after name -->
+                <xpath expr="//field[@name='name']" position="after">
                     <field name="service_type" optional="show"/>
                     <field name="car_type" optional="show"/>
-                    <field name="date_start" optional="show"/>
-                    <field name="date_end" optional="show"/>
+                </xpath>
+                <!-- Show duration before quantity -->
+                <xpath expr="//field[@name='product_uom_qty']" position="before">
                     <field name="duration" optional="show"/>
+                </xpath>
+                <!-- Show additional charges after unit price (price_unit not in tree view, so after price_subtotal) -->
+                <xpath expr="//field[@name='price_subtotal']" position="before">
                     <field name="additional_charges" optional="show"/>
+                </xpath>
+                <!-- Hide date fields -->
+                <xpath expr="//field[@name='price_subtotal']" position="after">
+                    <field name="date_start" invisible="1" column_invisible="True"/>
+                    <field name="date_end" invisible="1" column_invisible="True"/>
                 </xpath>
             </field>
         </record>
@@ -42,14 +70,25 @@
             <field name="model">sale.order.line</field>
             <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_uom_qty']" position="after">
+                <!-- Show car booking fields after product_id -->
+                <xpath expr="//field[@name='product_id']" position="after">
                     <field name="car_booking_line_id"/>
                     <field name="service_type"/>
                     <field name="car_type"/>
-                    <field name="date_start"/>
-                    <field name="date_end"/>
+                </xpath>
+                <!-- Show duration before quantity -->
+                <xpath expr="//field[@name='product_uom_qty']" position="before">
                     <field name="duration"/>
+                </xpath>
+                <!-- Show additional charges after unit price -->
+                <xpath expr="//field[@name='price_unit']" position="after">
                     <field name="additional_charges"/>
+                    <field name="discount"/>
+                </xpath>
+                <!-- Hide date fields -->
+                <xpath expr="//field[@name='price_unit']" position="after">
+                    <field name="date_start" invisible="1"/>
+                    <field name="date_end" invisible="1"/>
                 </xpath>
             </field>
         </record>
