@@ -1,42 +1,27 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    car_booking_id = fields.Many2one(
-        'car.booking',
-        string='Car Booking',
-        help='Related car booking for this sales order'
-    )
-    
-    @api.depends('order_line.price_subtotal', 'order_line.additional_charges', 'order_line.tax_id')
-    def _compute_amounts(self):
-        """Override to include additional charges in total calculations"""
-        super()._compute_amounts()
-        
-        # Recalculate totals to include additional charges
+    custom_amount_untaxed = fields.Monetary(string='Custom Untaxed Amount', compute='_compute_custom_amounts', store=True, currency_field='currency_id')
+    custom_amount_tax = fields.Monetary(string='Custom VAT Taxes', compute='_compute_custom_amounts', store=True, currency_field='currency_id')
+    custom_amount_total = fields.Monetary(string='Custom Total', compute='_compute_custom_amounts', store=True, currency_field='currency_id')
+
+    @api.depends('order_line.price_subtotal', 'order_line.price_tax', 'order_line.tax_id')
+    def _compute_custom_amounts(self):
         for order in self:
-            total_untaxed = 0.0
-            total_tax = 0.0
-            
+            # Sum up all custom line subtotals
+            custom_untaxed = sum(order.order_line.mapped('price_subtotal'))
+            # Find the tax rate (assume all lines have the same tax rate for simplicity)
+            tax_rate = 0.0
             for line in order.order_line:
-                # Use the line's price_subtotal (which already includes additional charges)
-                total_untaxed += line.price_subtotal
-                total_tax += line.price_tax
-            
-            # Update order totals
-            order.amount_untaxed = total_untaxed
-            order.amount_tax = total_tax
-            order.amount_total = total_untaxed + total_tax
-    
-    @api.model
-    def create(self, vals):
-        """Override create to ensure amounts are calculated correctly"""
-        # Remove recursive calls to avoid infinite loops
-        return super().create(vals)
-    
-    def write(self, vals):
-        """Override write to ensure amounts are calculated correctly"""
-        # Remove recursive calls to avoid infinite loops
-        return super().write(vals) 
+                if line.tax_id:
+                    # Take the first tax's amount (percentage)
+                    tax_rate = line.tax_id[0].amount
+                    break
+            custom_tax = custom_untaxed * (tax_rate / 100.0)
+            custom_total = custom_untaxed + custom_tax
+            order.custom_amount_untaxed = custom_untaxed
+            order.custom_amount_tax = custom_tax
+            order.custom_amount_total = custom_total 

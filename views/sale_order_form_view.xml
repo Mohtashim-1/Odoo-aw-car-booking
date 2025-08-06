@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_order_form_inherit_car_booking_totals" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.car.booking.totals</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Hide standard totals -->
+                <xpath expr="//field[@name='tax_totals']" position="replace">
+                    <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" readonly="1" invisible="1"/>
+                </xpath>
+                <!-- Add custom totals styled like Odoo's standard totals -->
+                <xpath expr="//field[@name='tax_totals']" position="after">
+                    <div class="oe_subtotal_footer d-flex flex-column align-items-end" style="min-width: 320px;">
+                        <div class="d-flex justify-content-between w-100 mb-1">
+                            <span class="fw-bold">Untaxed Amount:</span>
+                            <span><field name="custom_amount_untaxed" readonly="1" nolabel="1" widget="monetary"/></span>
+                        </div>
+                        <div class="d-flex justify-content-between w-100 mb-1">
+                            <span class="fw-bold">VAT Taxes:</span>
+                            <span><field name="custom_amount_tax" readonly="1" nolabel="1" widget="monetary"/></span>
+                        </div>
+                        <div class="d-flex justify-content-between w-100 mt-2" style="border-top: 1px solid #ddd; padding-top: 6px;">
+                            <span class="fw-bold">Total:</span>
+                            <span><field name="custom_amount_total" readonly="1" nolabel="1" widget="monetary"/></span>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo> 
