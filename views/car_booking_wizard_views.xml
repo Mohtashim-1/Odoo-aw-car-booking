@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Car Booking Creation Wizard Form View -->
+        <record id="view_car_booking_create_wizard_form" model="ir.ui.view">
+            <field name="name">car.booking.create.wizard.form</field>
+            <field name="model">car.booking.create.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Create Car Booking">
+                    <sheet>
+                        <group>
+                            <group string="Basic Information">
+                                <field name="sale_order_id" readonly="1"/>
+                                <field name="customer_name" required="1"/>
+                                <field name="mobile"/>
+                                <field name="date_of_service" required="1"/>
+                            </group>
+                            <group string="Booking Details">
+                                <field name="booking_type" required="1"/>
+                                <field name="region" required="1"/>
+                                <field name="business_type" required="1"/>
+                                <field name="payment_type" required="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="auto_create_lines"/>
+                        </group>
+                        <group>
+                            <field name="notes" placeholder="Enter additional notes for the car booking..."/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="action_create_car_booking" 
+                                type="object" 
+                                string="Create Car Booking" 
+                                class="btn-primary"/>
+                        <button name="action_cancel" 
+                                type="object" 
+                                string="Cancel" 
+                                class="btn-secondary"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Car Booking Creation Wizard Action -->
+        <record id="action_car_booking_create_wizard" model="ir.actions.act_window">
+            <field name="name">Create Car Booking</field>
+            <field name="res_model">car.booking.create.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{}</field>
+        </record>
+    </data>
+</odoo> 

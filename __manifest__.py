@@ -13,6 +13,8 @@
         'views/res_users_view.xml',
         'views/sale_order_line_view.xml',
         'views/sale_order_form_view.xml',
+        'views/sale_order_views.xml',
+        'views/car_booking_wizard_views.xml',
         'views/account_move_view.xml',
         'data/car_extra_service_data.xml',
         'views/car_extra_service_view.xml',

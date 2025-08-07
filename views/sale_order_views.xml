@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sales Order Form View - Add Car Booking Button -->
+    <record id="view_order_form_inherit_car_booking" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.car.booking</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Car Booking button in the header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_create_car_booking" 
+                        type="object" 
+                        string="Create Car Booking" 
+                        class="btn-primary"
+                        invisible="car_booking_id"/>
+                <button name="action_create_car_booking_wizard" 
+                        type="object" 
+                        string="Create Car Booking (Wizard)" 
+                        class="btn-secondary"
+                        invisible="car_booking_id"/>
+                <button name="action_view_car_booking" 
+                        type="object" 
+                        string="View Car Booking" 
+                        class="btn-secondary"
+                        invisible="not car_booking_id"/>
+            </xpath>
+            
+            <!-- Add Car Booking field after partner_id -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="car_booking_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Sales Order Tree View - Add Car Booking Column -->
+    <record id="view_sales_order_tree_inherit_car_booking" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.car.booking</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="car_booking_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

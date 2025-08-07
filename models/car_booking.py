@@ -49,6 +49,13 @@ class CarBooking(models.Model):
         help="Reference to the trip profile created from this booking."
     )
 
+    # Link to sales order
+    sale_order_id = fields.Many2one(
+        'sale.order',
+        string='Sales Order',
+        help="Reference to the sales order that created this car booking"
+    )
+
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -482,6 +489,14 @@ class CarBooking(models.Model):
 
     @api.model
     def create(self, vals):
+        # Defensive: Ensure all Many2one fields are valid or None
+        relational_fields = [
+            'location_id', 'branch_id', 'company_id', 'trip_profile_id', 'sale_order_id',
+            'customer_name', 'car_id', 'driver_name', 'project_name', 'airport_id',
+        ]
+        for field in relational_fields:
+            if field in vals and not vals[field]:
+                vals[field] = None
         # Set default branch if not provided
         if not vals.get('location_id'):
             default_branch = self._get_default_branch()

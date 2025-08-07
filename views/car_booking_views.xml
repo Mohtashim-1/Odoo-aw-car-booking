@@ -118,6 +118,9 @@
                             />
                             <field name="invoice_id" invisible="1"/>
                             <field name="quotation_id" invisible="1"/>
+                            <field name="name"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="trip_profile_id" readonly="1"/>
 
                                            
 

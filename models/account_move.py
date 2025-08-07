@@ -69,17 +69,6 @@ class AccountMove(models.Model):
         help='Custom total amount including additional charges'
     )
     
-    # Custom fields for display
-    custom_untaxed_amount = fields.Monetary(
-        string='Custom Untaxed Amount',
-        help='Custom untaxed amount field for display'
-    )
-    
-    custom_total_amount = fields.Monetary(
-        string='Custom Total Amount',
-        help='Custom total amount field for display'
-    )
-    
     @api.depends('date_start', 'date_end')
     def _compute_duration(self):
         for record in self:
@@ -139,10 +128,10 @@ class AccountMove(models.Model):
                 print(f"DEBUG: Updated amount_untaxed = {correct_untaxed}")
                 print(f"DEBUG: Updated amount_total = {correct_total}")
                 print(f"DEBUG: Updated amount_residual = {correct_residual}")
-        
+                
         # Refresh the records to show updated values
         self._invalidate_cache(['amount_untaxed', 'amount_total', 'amount_residual'])
-
+        
     def action_print_car_booking_invoice(self):
         """Print car booking invoice using custom template"""
         self.ensure_one()
@@ -167,7 +156,7 @@ class AccountMove(models.Model):
             print(f"DEBUG: Using standard print template")
             # Use standard print for other invoices
             return super().action_print_pdf()
-    
+
     def action_print(self):
         """Override default print to use custom template for car booking invoices"""
         self.ensure_one()
@@ -189,7 +178,7 @@ class AccountMove(models.Model):
         print(f"DEBUG: direct_print_car_booking called for invoice {self.name}")
         print(f"DEBUG: car_booking_id = {self.car_booking_id}")
         print(f"DEBUG: move_type = {self.move_type}")
-        
+                    
         # Force use of custom template for all invoices
         print(f"DEBUG: Force using custom car booking invoice template")
         return self.env.ref('aw_car_booking.action_report_car_booking_invoice').report_action(self)
@@ -284,7 +273,7 @@ class AccountMove(models.Model):
                 }
         
         result = super()._recompute_dynamic_lines(modify)
-        
+                    
         # After standard recomputation, restore our amounts if they were changed
         for record in self:
             if record.id in original_amounts:
@@ -292,7 +281,6 @@ class AccountMove(models.Model):
                 if (record.amount_untaxed != original['amount_untaxed'] or 
                     record.amount_total != original['amount_total'] or
                     record.amount_residual != original['amount_residual']):
-                    
                     # Restore the original amounts
                     self.env.cr.execute("""
                         UPDATE account_move 
@@ -338,8 +326,8 @@ class AccountMove(models.Model):
                 print(f"DEBUG: Preserved amount_untaxed = {amounts['amount_untaxed']}")
                 print(f"DEBUG: Preserved amount_total = {amounts['amount_total']}")
                 print(f"DEBUG: Preserved amount_residual = {amounts['amount_residual']}")
-        
-        return result
+            
+            return result
 
 
 class AccountMoveLine(models.Model):
