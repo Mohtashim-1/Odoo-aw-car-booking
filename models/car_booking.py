@@ -177,6 +177,9 @@ class CarBooking(models.Model):
         """Compute the category ID for customer domain filtering"""
         for record in self:
             try:
+                # Always set to False first to avoid any broken references
+                record.customer_domain_category_id = False
+                
                 if record.business_type:
                     category_mapping = {
                         'corporate': 'Corporate',
@@ -191,10 +194,15 @@ class CarBooking(models.Model):
                     if category_name:
                         category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
                         if not category:
-                            category = self.env['res.partner.category'].create({
-                                'name': category_name,
-                                'color': 1
-                            })
+                            try:
+                                category = self.env['res.partner.category'].create({
+                                    'name': category_name,
+                                    'color': 1
+                                })
+                            except Exception as create_error:
+                                print(f"Error creating category {category_name}: {create_error}")
+                                continue
+                        
                         # Ensure the category is valid before assigning
                         if category and category.exists():
                             record.customer_domain_category_id = category.id
@@ -1086,6 +1094,57 @@ Sample Partners:
                 'sticky': False,
             }
         }
+
+    def action_cleanup_broken_references(self):
+        """Clean up any broken Many2one references in car booking records"""
+        for record in self:
+            try:
+                # Clean up customer_domain_category_id if it's broken
+                if record.customer_domain_category_id and not record.customer_domain_category_id.exists():
+                    record.customer_domain_category_id = False
+                
+                # Clean up customer_name if it's broken
+                if record.customer_name and not record.customer_name.exists():
+                    record.customer_name = False
+                
+                # Clean up other potential broken references
+                if record.car_id and not record.car_id.exists():
+                    record.car_id = False
+                
+                if record.driver_name and not record.driver_name.exists():
+                    record.driver_name = False
+                
+                if record.guest_name and not record.guest_name.exists():
+                    record.guest_name = False
+                
+                if record.sale_order_id and not record.sale_order_id.exists():
+                    record.sale_order_id = False
+                
+                if record.quotation_id and not record.quotation_id.exists():
+                    record.quotation_id = False
+                
+                if record.invoice_id and not record.invoice_id.exists():
+                    record.invoice_id = False
+                
+            except Exception as e:
+                print(f"Error cleaning up broken references for record {record.id}: {e}")
+                continue
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Cleanup Complete',
+                'message': 'Broken references have been cleaned up.',
+                'type': 'success',
+            }
+        }
+
+    @api.model
+    def action_cleanup_all_broken_references(self):
+        """Clean up broken references for all car booking records"""
+        all_bookings = self.search([])
+        return all_bookings.action_cleanup_broken_references()
 
     def _get_customer_domain(self):
         """Return domain for customer_name based on business_type"""

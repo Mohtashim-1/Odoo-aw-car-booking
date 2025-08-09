@@ -130,6 +130,9 @@ class SaleOrder(models.Model):
                     'type_of_service_id': order_line.service_type.id if order_line.service_type else False,
                     'car_model_id': order_line.car_type.id if order_line.car_type else False,
                     'extra_hour_charges': order_line.additional_charges or 0.0,
+                    
+                    # Transfer tax information from sales order line
+                    'tax_ids': [(6, 0, order_line.tax_id.ids)] if order_line.tax_id else False,
                 }
                 
                 # Create the booking line
@@ -137,6 +140,10 @@ class SaleOrder(models.Model):
                 
                 # Link the order line to the booking line
                 order_line.car_booking_line_id = booking_line.id
+        
+        # Recalculate tax amounts in the car booking
+        car_booking._compute_total_tax()
+        car_booking._compute_amounts()
         
         # Show success message
         return {

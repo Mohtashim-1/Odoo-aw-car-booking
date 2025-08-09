@@ -87,6 +87,13 @@
             class="btn-secondary"
             invisible="1"
             help="Check field configuration and view setup"/>
+    
+    <!-- Cleanup button for broken references -->
+    <button name="action_cleanup_broken_references" 
+            string="Cleanup Broken References" 
+            type="object" 
+            class="btn-secondary"
+            help="Clean up any broken Many2one references in this record"/>
 
 </header>
             <sheet>

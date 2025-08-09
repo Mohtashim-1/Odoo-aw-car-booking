@@ -12,12 +12,12 @@
                         type="object" 
                         string="Create Car Booking" 
                         class="btn-primary"
-                        invisible="car_booking_id"/>
+                        invisible="car_booking_id or state != 'sale'"/>
                 <button name="action_create_car_booking_wizard" 
                         type="object" 
                         string="Create Car Booking (Wizard)" 
                         class="btn-secondary"
-                        invisible="car_booking_id"/>
+                        invisible="1"/>
                 <button name="action_view_car_booking" 
                         type="object" 
                         string="View Car Booking" 
@@ -28,6 +28,17 @@
             <!-- Add Car Booking field after partner_id -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="car_booking_id" readonly="1"/>
+            </xpath>
+            
+            <!-- Add Car Booking button in the button box next to Delivery -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_car_booking"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-car"
+                        invisible="not car_booking_id">
+                    <field name="car_booking_id" widget="statinfo" string="Car Booking"/>
+                </button>
             </xpath>
         </field>
     </record>
