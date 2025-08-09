@@ -17,20 +17,17 @@ class SaleOrderLine(models.Model):
     service_type = fields.Many2one(
         'type.of.service',
         string='Service Type',
-        required=True,
         help='Type of car booking service (e.g., Transfer, Full Day, etc.)'
     )
 
     car_type = fields.Many2one(
         'fleet.vehicle.model',
         string='Car Type',
-        required=True,
         help='Type/model of the car for this booking'
     )
 
     duration = fields.Integer(
         string='Duration (Days)',
-        required=True,
         default=1,
         help='Duration of the booking in days'
     )
@@ -85,19 +82,27 @@ class SaleOrderLine(models.Model):
                 discount_amount = subtotal_with_charges * (discount / 100.0)
                 subtotal_after_discount = subtotal_with_charges - discount_amount
                 
-                # Calculate taxes
-                taxes_res = line.tax_id.compute_all(
+                # Calculate taxes as Price Excluded (add on top)
+                tax_amount = 0.0
+                for tax in line.tax_id:
+                    if tax.amount_type == 'percent':
+                        # Calculate VAT as Price Excluded (add on top)
+                        tax_amount += subtotal_after_discount * (tax.amount / 100.0)
+                    else:
+                        # For other tax types, use standard computation
+                        taxes_res = tax.compute_all(
                     subtotal_after_discount,
                     line.order_id.currency_id,
                     line.product_uom_qty,
                     product=line.product_id,
                     partner=line.order_id.partner_shipping_id
                 )
+                        tax_amount += taxes_res['total_included'] - taxes_res['total_excluded']
                 
                 # Set the computed values
                 line.price_subtotal = subtotal_after_discount
-                line.price_tax = taxes_res['total_included'] - taxes_res['total_excluded']
-                line.price_total = taxes_res['total_included']
+                line.price_tax = tax_amount
+                line.price_total = subtotal_after_discount + tax_amount
                 
                 # Debug logging
                 _logger.info(f'Line {line.id}: duration={duration}, qty={qty}, price_unit={price_unit}, additional_charges={additional_charges}, base_amount={base_amount}, subtotal_with_charges={subtotal_with_charges}, final_subtotal={subtotal_after_discount}')

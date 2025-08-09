@@ -127,9 +127,9 @@ class SaleOrder(models.Model):
                     'name': order_line.name or order_line.product_id.name,
                     
                     # Map car booking specific fields from order line
-                    'service_type': order_line.service_type.id if order_line.service_type else False,
-                    'car_type': order_line.car_type.id if order_line.car_type else False,
-                    'additional_charges': order_line.additional_charges or 0.0,
+                    'type_of_service_id': order_line.service_type.id if order_line.service_type else False,
+                    'car_model_id': order_line.car_type.id if order_line.car_type else False,
+                    'extra_hour_charges': order_line.additional_charges or 0.0,
                 }
                 
                 # Create the booking line

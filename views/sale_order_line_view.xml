@@ -1,39 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Inherit Sale Order Form View to Add Car Booking Fields to Order Lines -->
+        <!-- Override Sale Order Form View to Add Car Booking Fields to Order Lines -->
         <record id="view_order_form_inherit_car_booking" model="ir.ui.view">
             <field name="name">sale.order.form.inherit.car.booking</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <!-- Hide packaging fields -->
-                <xpath expr="//field[@name='order_line']//list//field[@name='product_packaging_id']" position="replace">
-                    <field name="product_packaging_id" invisible="1" column_invisible="True"/>
+                <!-- Replace the entire order_line list view -->
+                <xpath expr="//field[@name='order_line']" position="replace">
+                    <field name="order_line" context="{'default_car_booking_line_id': car_booking_id}">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="service_type"/>
+                            <field name="car_type"/>
+                            <field name="duration"/>
+                            <field name="product_uom_qty"/>
+                            <field name="product_uom"/>
+                            <field name="price_unit"/>
+                            <field name="additional_charges"/>
+                            <field name="discount"/>
+                            <field name="tax_id" widget="many2many_tags"/>
+                            <field name="price_subtotal"/>
+                            <field name="price_tax"/>
+                            <field name="price_total"/>
+                        </list>
+                    </field>
                 </xpath>
-                <xpath expr="//field[@name='order_line']//list//field[@name='product_packaging_qty']" position="replace">
-                    <field name="product_packaging_qty" invisible="1" column_invisible="True"/>
+            </field>
+        </record>
+
+        <!-- Force update the view by creating a new one with higher priority -->
+        <record id="view_order_form_car_booking_override" model="ir.ui.view">
+            <field name="name">sale.order.form.car.booking.override</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="view_order_form_inherit_car_booking"/>
+            <field name="priority" eval="99"/>
+            <field name="arch" type="xml">
+                <!-- Force the order_line to use our custom list view -->
+                <xpath expr="//field[@name='order_line']" position="replace">
+                    <field name="order_line" context="{'default_car_booking_line_id': car_booking_id}">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="service_type"/>
+                            <field name="car_type"/>
+                            <field name="duration"/>
+                            <field name="product_uom_qty"/>
+                            <field name="product_uom"/>
+                            <field name="price_unit"/>
+                            <field name="additional_charges"/>
+                            <field name="discount"/>
+                            <field name="tax_id" widget="many2many_tags"/>
+                            <field name="price_subtotal"/>
+                            <field name="price_tax"/>
+                            <field name="price_total"/>
+                        </list>
+                    </field>
                 </xpath>
-                
-                <!-- Show car booking fields after product_id -->
-                <xpath expr="//field[@name='order_line']//list//field[@name='product_id']" position="after">
-                    <field name="service_type" optional="show"/>
-                    <field name="car_type" optional="show"/>
-                </xpath>
-                <!-- Show duration before quantity -->
-                <xpath expr="//field[@name='order_line']//list//field[@name='product_uom_qty']" position="before">
-                    <field name="duration" optional="show"/>
-                </xpath>
-                <!-- Show additional charges after unit price -->
-                <xpath expr="//field[@name='order_line']//list//field[@name='price_unit']" position="after">
-                    <field name="additional_charges" optional="show"/>
-                    <field name="discount" optional="show"/>
-                </xpath>
-                <!-- Hide date fields -->
-                <xpath expr="//field[@name='order_line']//list//field[@name='price_unit']" position="after">
-                    <field name="date_start" invisible="1" column_invisible="True"/>
-                    <field name="date_end" invisible="1" column_invisible="True"/>
-                </xpath>
+            </field>
+        </record>
+
+        <!-- Custom Sale Order Line List View for Car Booking -->
+        <record id="view_sale_order_line_list_car_booking" model="ir.ui.view">
+            <field name="name">sale.order.line.list.car.booking</field>
+            <field name="model">sale.order.line</field>
+            <field name="arch" type="xml">
+                <list editable="bottom">
+                    <field name="product_id"/>
+                    <field name="service_type"/>
+                    <field name="car_type"/>
+                    <field name="duration"/>
+                    <field name="product_uom_qty"/>
+                    <field name="product_uom"/>
+                    <field name="price_unit"/>
+                    <field name="additional_charges"/>
+                    <field name="discount"/>
+                    <field name="tax_id" widget="many2many_tags"/>
+                    <field name="price_subtotal"/>
+                    <field name="price_tax"/>
+                    <field name="price_total"/>
+                </list>
             </field>
         </record>
 
@@ -45,21 +91,16 @@
             <field name="arch" type="xml">
                 <!-- Show car booking fields after name -->
                 <xpath expr="//field[@name='name']" position="after">
-                    <field name="service_type" optional="show"/>
-                    <field name="car_type" optional="show"/>
+                    <field name="service_type"/>
+                    <field name="car_type"/>
                 </xpath>
                 <!-- Show duration before quantity -->
                 <xpath expr="//field[@name='product_uom_qty']" position="before">
-                    <field name="duration" optional="show"/>
+                    <field name="duration"/>
                 </xpath>
                 <!-- Show additional charges after unit price (price_unit not in tree view, so after price_subtotal) -->
                 <xpath expr="//field[@name='price_subtotal']" position="before">
-                    <field name="additional_charges" optional="show"/>
-                </xpath>
-                <!-- Hide date fields -->
-                <xpath expr="//field[@name='price_subtotal']" position="after">
-                    <field name="date_start" invisible="1" column_invisible="True"/>
-                    <field name="date_end" invisible="1" column_invisible="True"/>
+                    <field name="additional_charges"/>
                 </xpath>
             </field>
         </record>
@@ -84,11 +125,6 @@
                 <xpath expr="//field[@name='price_unit']" position="after">
                     <field name="additional_charges"/>
                     <field name="discount"/>
-                </xpath>
-                <!-- Hide date fields -->
-                <xpath expr="//field[@name='price_unit']" position="after">
-                    <field name="date_start" invisible="1"/>
-                    <field name="date_end" invisible="1"/>
                 </xpath>
             </field>
         </record>
