@@ -89,7 +89,7 @@ class CarBooking(models.Model):
     customer_name = fields.Many2one(
         'res.partner', 
         string='Customer Name',
-        domain="[('category_id', '=', customer_domain_category_id)]"
+        domain=lambda self: self._get_customer_domain()
     )
     
     mobile = fields.Char(string='Mobile')
@@ -119,16 +119,27 @@ class CarBooking(models.Model):
     total_tax = fields.Monetary(string="Vat Total Tax", compute='_compute_total_tax', store=True)
     currency_id = fields.Many2one('res.currency', string='Currency', required=True, default=lambda self: self.env.company.currency_id)
 
-    @api.depends('car_booking_lines.tax_ids', 'car_booking_lines.unit_price', 'car_booking_lines.amount')
+    @api.depends('car_booking_lines.tax_ids', 'car_booking_lines.unit_price', 'car_booking_lines.amount', 'car_booking_lines.qty', 'car_booking_lines.duration')
     def _compute_total_tax(self):
         for booking in self:
             total_tax = 0.0
+            
             for line in booking.car_booking_lines:
-                price = line.unit_price or 0.0
-                # taxes = line.tax_ids.compute_all(price, currency=booking.currency_id)
-                # total_tax += sum(t['amount'] for t in taxes['taxes'])
-                taxes = line.tax_ids.compute_all(price, booking.currency_id, 1, product=None, partner=None)
-                total_tax += sum(t.get('amount', 0.0) for t in taxes.get('taxes', []))
+                # Use the actual line amount (which is the untaxed amount)
+                line_amount = line.amount or 0.0
+                
+                if line.tax_ids and line_amount > 0:
+                    # For VAT calculation, we want to ensure it's calculated as Price Excluded
+                    # If the tax is configured as Price Included, we need to adjust the calculation
+                    for tax in line.tax_ids:
+                        if tax.amount_type == 'percent':
+                            # Calculate VAT as Price Excluded (add on top)
+                            tax_amount = line_amount * (tax.amount / 100.0)
+                            total_tax += tax_amount
+                        else:
+                            # For other tax types, use the standard computation
+                            taxes = tax.compute_all(line_amount, booking.currency_id, 1, product=None, partner=None)
+                            total_tax += sum(t.get('amount', 0.0) for t in taxes.get('taxes', []))
             
             booking.total_tax = total_tax
 
@@ -168,7 +179,7 @@ class CarBooking(models.Model):
             try:
                 if record.business_type:
                     category_mapping = {
-                        'corporate': 'Companies',
+                        'corporate': 'Corporate',
                         'hotels': 'Hotels', 
                         'government': 'Government',
                         'individuals': 'Individuals',
@@ -184,13 +195,18 @@ class CarBooking(models.Model):
                                 'name': category_name,
                                 'color': 1
                             })
-                        record.customer_domain_category_id = category.id
+                        # Ensure the category is valid before assigning
+                        if category and category.exists():
+                            record.customer_domain_category_id = category.id
+                        else:
+                            record.customer_domain_category_id = False
                     else:
                         record.customer_domain_category_id = False
                 else:
                     record.customer_domain_category_id = False
-            except Exception:
+            except Exception as e:
                 # Handle any errors gracefully during copy operations
+                print(f"Error in _compute_customer_domain_category: {e}")
                 record.customer_domain_category_id = False
 
     guest_name = fields.Many2one('res.partner', string='Guest Name')
@@ -493,10 +509,37 @@ class CarBooking(models.Model):
         relational_fields = [
             'location_id', 'branch_id', 'company_id', 'trip_profile_id', 'sale_order_id',
             'customer_name', 'car_id', 'driver_name', 'project_name', 'airport_id',
+            'customer_domain_category_id',  # Add this field to the safety check
         ]
         for field in relational_fields:
             if field in vals and not vals[field]:
                 vals[field] = None
+        
+        # Ensure customer_domain_category_id is properly set if business_type is provided
+        if vals.get('business_type') and not vals.get('customer_domain_category_id'):
+            try:
+                category_mapping = {
+                    'corporate': 'Corporate',
+                    'hotels': 'Hotels', 
+                    'government': 'Government',
+                    'individuals': 'Individuals',
+                    'rental': 'Rental',
+                    'others': 'Others'
+                }
+                category_name = category_mapping.get(vals['business_type'])
+                if category_name:
+                    category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+                    if not category:
+                        category = self.env['res.partner.category'].create({
+                            'name': category_name,
+                            'color': 1
+                        })
+                    if category and category.exists():
+                        vals['customer_domain_category_id'] = category.id
+            except Exception as e:
+                print(f"Error setting customer_domain_category_id in create: {e}")
+                vals['customer_domain_category_id'] = None
+        
         # Set default branch if not provided
         if not vals.get('location_id'):
             default_branch = self._get_default_branch()
@@ -547,10 +590,10 @@ class CarBooking(models.Model):
         
         return super(CarBooking, self).create(vals)
     
-    @api.depends('car_booking_lines.amount', 'car_booking_lines.extra_hour', 'car_booking_lines.extra_hour_charges')
+    @api.depends('car_booking_lines.amount', 'car_booking_lines.extra_hour', 'car_booking_lines.extra_hour_charges', 'total_tax')
     def _compute_amounts(self):
         for booking in self:
-            # Sum all line amounts
+            # Sum all line amounts (untaxed amounts)
             total_lines = sum(line.amount for line in booking.car_booking_lines)
             
             # Only count extra_hour_charges for lines that have extra_hour > 0
@@ -564,10 +607,12 @@ class CarBooking(models.Model):
             hour_total = sum(line.extra_hour for line in booking.car_booking_lines if line.extra_hour and line.extra_hour > 0)
             
             booking.without_vat_price = total_lines
-            booking.vat = total_lines * 0.15  # 15% VAT
-            booking.amount_total = (total_lines * 1.15) + booking.mis_charges
-            booking.extra_hour_charges_total = charges_total
+            # Use the computed total_tax (which now correctly calculates VAT as Price Excluded)
+            booking.vat = booking.total_tax
             booking.extra_hour_total = hour_total
+            booking.extra_hour_charges_total = charges_total
+            # Total = Untaxed Amount + VAT + Misc Charges
+            booking.amount_total = total_lines + booking.total_tax + (booking.mis_charges or 0.0)
 
     # @api.model
     # def create(self, vals):
@@ -1044,39 +1089,11 @@ Sample Partners:
 
     def _get_customer_domain(self):
         """Return domain for customer_name based on business_type"""
-        if not self.business_type:
-            return []
-        
-        # Define the mapping between business_type and partner category names
-        category_mapping = {
-            'corporate': 'Companies',
-            'hotels': 'Hotels', 
-            'government': 'Government',
-            'individuals': 'Individuals',
-            'rental': 'Rental',
-            'others': 'Others'
-        }
-        
-        category_name = category_mapping.get(self.business_type)
-        if not category_name:
-            return []
-        
-        # Find the category
-        category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
-        if not category:
-            # Create the category if it doesn't exist
-            category = self.env['res.partner.category'].create({
-                'name': category_name,
-                'color': 1
-            })
-        
-        return [('category_id', 'in', [category.id])]
-
-    @api.onchange('business_type')
-    def _onchange_business_type(self):
-        """Filter customer_name based on business_type matching partner categories"""
-        if self.business_type:
-            # Map business_type to category name
+        try:
+            if not self.business_type:
+                return []
+            
+            # Define the mapping between business_type and partner category names
             category_mapping = {
                 'corporate': 'Corporate',
                 'hotels': 'Hotels', 
@@ -1087,41 +1104,96 @@ Sample Partners:
             }
             
             category_name = category_mapping.get(self.business_type)
-            print(f"DEBUG: Mapped business_type '{self.business_type}' to category '{category_name}'")
+            if not category_name:
+                return []
             
-            if category_name:
-                # Find or create the category
-                category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
-                print(f"DEBUG: Found category: {category.name if category else 'None'}")
-                
-                if not category:
+            # Find the category
+            category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+            if not category:
+                # Create the category if it doesn't exist
+                try:
                     category = self.env['res.partner.category'].create({
                         'name': category_name,
                         'color': 1
                     })
-                    print(f"DEBUG: Created new category '{category_name}' with ID {category.id}")
+                except Exception as e:
+                    print(f"Error creating category '{category_name}': {e}")
+                    return []
+            
+            # Ensure category is valid
+            if category and category.exists():
+                return [('category_id', 'in', [category.id])]
+            else:
+                return []
+        except Exception as e:
+            print(f"Error in _get_customer_domain: {e}")
+            return []
+
+    @api.onchange('business_type')
+    def _onchange_business_type(self):
+        """Filter customer_name based on business_type matching partner categories"""
+        try:
+            if self.business_type:
+                # Map business_type to category name
+                category_mapping = {
+                    'corporate': 'Corporate',
+                    'hotels': 'Hotels', 
+                    'government': 'Government',
+                    'individuals': 'Individuals',
+                    'rental': 'Rental',
+                    'others': 'Others'
+                }
                 
-                # Clear customer_name if it doesn't match the new category
-                if self.customer_name and self.customer_name.category_id != category:
-                    print(f"DEBUG: Clearing customer_name '{self.customer_name.name}' as it doesn't match category")
-                    self.customer_name = False
+                category_name = category_mapping.get(self.business_type)
+                print(f"DEBUG: Mapped business_type '{self.business_type}' to category '{category_name}'")
                 
-                # Test the domain to see how many partners match
-                domain = [('category_id', 'in', [category.id])]
-                matching_partners = self.env['res.partner'].search(domain)
-                print(f"DEBUG: Found {len(matching_partners)} partners matching domain")
-                for partner in matching_partners[:5]:  # Show first 5 for debugging
-                    print(f"DEBUG: Matching partner: {partner.name} (ID: {partner.id})")
-                
-                # Force field refresh
+                if category_name:
+                    # Find or create the category
+                    category = self.env['res.partner.category'].search([('name', '=', category_name)], limit=1)
+                    print(f"DEBUG: Found category: {category.name if category else 'None'}")
+                    
+                    if not category:
+                        category = self.env['res.partner.category'].create({
+                            'name': category_name,
+                            'color': 1
+                        })
+                        print(f"DEBUG: Created new category '{category_name}' with ID {category.id}")
+                    
+                    # Ensure category is valid before proceeding
+                    if category and category.exists():
+                        # Clear customer_name if it doesn't match the new category
+                        if self.customer_name and self.customer_name.exists() and self.customer_name.category_id != category:
+                            print(f"DEBUG: Clearing customer_name '{self.customer_name.name}' as it doesn't match category")
+                            self.customer_name = False
+                        
+                        # Test the domain to see how many partners match
+                        domain = [('category_id', 'in', [category.id])]
+                        matching_partners = self.env['res.partner'].search(domain)
+                        print(f"DEBUG: Found {len(matching_partners)} partners matching domain")
+                        for partner in matching_partners[:5]:  # Show first 5 for debugging
+                            print(f"DEBUG: Matching partner: {partner.name} (ID: {partner.id})")
+                    else:
+                        print(f"DEBUG: Invalid category, clearing customer_name")
+                        self.customer_name = False
+                    
+                    # Force field refresh
+                    return {
+                        'value': {
+                            'customer_name': False
+                        }
+                    }
+            else:
+                # If no business_type, show all partners
+                print("DEBUG: No business_type selected, showing all partners")
                 return {
                     'value': {
                         'customer_name': False
                     }
                 }
-        else:
-            # If no business_type, show all partners
-            print("DEBUG: No business_type selected, showing all partners")
+        except Exception as e:
+            print(f"Error in _onchange_business_type: {e}")
+            # Clear customer_name on error to prevent issues
+            self.customer_name = False
             return {
                 'value': {
                     'customer_name': False
